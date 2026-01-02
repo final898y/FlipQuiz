@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcard Master</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>AI 規劃師學習助手</h1>
+
+      <div class="card" id="card" onclick="this.classList.toggle('is-flipped')">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <p id="question-text">點擊卡片開始</p>
+            <small>正面：題目</small>
+          </div>
+          <div class="card-face card-back">
+            <p id="answer-text">準備好了嗎？</p>
+            <small>背面：答案與說明</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-secondary">上一題</button>
+        <button class="btn btn-primary">下一題</button>
+      </div>
+    </div>
+  </body>
+</html>
