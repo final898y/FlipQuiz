@@ -3,32 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard Master - AI 學習助手</title>
+    <meta name="description" content="翻測卡 - 支援 Google Sheets 的互動式學習卡片系統，支援選擇題、翻卡記憶等多種學習模式">
+    <meta name="keywords" content="學習卡片,flashcard,記憶卡,題庫系統,線上學習">
+    <meta name="author" content="翻測卡">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="翻測卡 FlipQuiz">
+    <meta property="og:description" content="支援 Google Sheets 的互動式學習卡片系統">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    
+    <title>FlipQuiz 翻測卡</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
-        <h1>AI 規劃師學習助手</h1>
+        <header>
+            <h1>FlipQuiz 翻測卡</h1>
+        </header>
 
-        <div class="card" id="card">
+        <!-- 載入面板 -->
+        <section class="settings-panel" role="region" aria-label="題庫設定">
+            <label for="csv-url-input" class="visually-hidden">Google Sheets CSV 網址</label>
+            <input 
+                type="url" 
+                id="csv-url-input" 
+                placeholder="貼上 Google Sheets CSV 網址..."
+                aria-label="CSV 網址輸入框"
+                autocomplete="url"
+                spellcheck="false"
+            >
+            <button 
+                type="button"
+                onclick="loadUserSheet()" 
+                class="btn-sm"
+                aria-label="載入題庫"
+            >
+                <span class="btn-text">載入題庫</span>
+                <span class="btn-loading" aria-hidden="true">載入中...</span>
+            </button>
+        </section>
+
+        <!-- 錯誤提示區域 -->
+        <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+
+        <!-- 分類標籤 -->
+        <nav id="category-tags" class="tags-container" role="navigation" aria-label="題目分類"></nav>
+
+        <!-- 進度資訊 -->
+        <div id="progress-info" class="progress-text" role="status" aria-live="polite">等待載入題庫...</div>
+
+        <!-- 學習卡片 -->
+        <div class="card" id="card" role="region" aria-label="學習卡片" tabindex="0">
             <div class="card-inner">
-                <div class="card-face card-front">
-                    <p id="question-text">正在從雲端載入題庫...</p>
-                    <div id="options-container" class="options-grid"></div>
-                    <small>正面：題目 (點擊翻面)</small>
+                <!-- 正面 -->
+                <div class="card-face card-front" aria-hidden="false">
+                    <div class="card-content">
+                        <p id="question-text" class="question-text">請在上方輸入 CSV 網址並點擊載入。</p>
+                        <div id="options-container" class="options-grid" role="group" aria-label="選項列表"></div>
+                    </div>
+                    <small class="card-hint">正面：題目 (點擊翻面)</small>
                 </div>
-                <div class="card-face card-back">
-                    <p id="answer-text">載入中...</p>
-                    <p id="note-text" class="note-style"></p>
-                    <small>背面：答案 (點擊翻回)</small>
+                
+                <!-- 背面 -->
+                <div class="card-face card-back" aria-hidden="true">
+                    <div class="card-content">
+                        <p id="answer-text" class="answer-text"></p>
+                        <p id="note-text" class="note-style"></p>
+                    </div>
+                    <small class="card-hint">背面：答案與說明 (點擊翻回)</small>
                 </div>
             </div>
         </div>
 
-        <div class="controls">
-            <button class="btn btn-secondary" onclick="prevCard()">上一題</button>
-            <button class="btn btn-primary" onclick="nextCard()">下一題</button>
+        <!-- 控制按鈕 -->
+        <div class="controls" role="group" aria-label="卡片控制">
+            <button 
+                type="button"
+                class="btn btn-secondary" 
+                onclick="prevCard()"
+                aria-label="上一題"
+                title="上一題 (方向鍵 ←)"
+            >
+                ← 上一題
+            </button>
+            <button 
+                type="button"
+                class="btn btn-shuffle" 
+                onclick="manualShuffle()"
+                aria-label="隨機洗牌"
+                title="隨機洗牌"
+            >
+                🔀 洗牌
+            </button>
+            <button 
+                type="button"
+                class="btn btn-primary" 
+                onclick="nextCard()"
+                aria-label="下一題"
+                title="下一題 (方向鍵 →)"
+            >
+                下一題 →
+            </button>
+        </div>
+
+        <!-- 鍵盤提示 -->
+        <div class="keyboard-hint">
+            <small>💡 提示：使用 ← → 方向鍵切換題目，空白鍵翻轉卡片</small>
         </div>
     </div>
 
