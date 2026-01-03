@@ -1,93 +1,78 @@
-# 📚 Flashcard Master：AI 規劃師學習助手
+# 📚 Flashcard Master - AI 學習助手
 
-這是一個專為「AI 應用規劃師」證照及語言學習設計的輕量化、靜態單字卡網站。
+這是一個輕量化的網頁單字卡應用程式，專為學習與複習設計。它不需要後端伺服器，直接讀取 Google Sheets (試算表) 的資料來產生題目，支援「翻牌記憶」與「選擇題測驗」兩種模式。
 
-## 一、 專案核心規格
+## ✨ 特色
 
-- **目標：** 簡單、無後端、跨平台（手機/電腦）。
-- **資料源：** 串接 Google Sheets（透過 CSV 格式）。
-- **功能需求：**
-- **單字卡模式 (Flashcard)：** 點擊翻面，學習專有名詞。
-- **測驗模式 (Quiz)：** 單選題練習，即時回饋正誤。
-- **動態載入：** 修改 Google 表格內容後，網頁重新整理即可更新。
+- **無需後端**：純靜態網頁，可直接在瀏覽器開啟或部署至 GitHub Pages。
+- **即時更新**：題目資料存放在 Google Sheets，修改試算表後，網頁重新整理即同步更新。
+- **雙重模式**：
+  - **單字卡 (Flashcard)**：點擊卡片翻面查看答案與筆記。
+  - **測驗 (Quiz)**：支援單選題，答對自動翻面，答錯會有震動提示。
+- **響應式設計**：支援手機與電腦瀏覽，並具備 3D 翻轉動畫效果。
 
-## 二、 資料結構設計 (Google Sheets)
+## 🚀 快速開始
 
-請在 Google Sheets 建立以下欄位，並發佈為 **CSV** 格式。
-發佈設定： 1. 點擊「檔案」 > 「共用」 > 「發佈到網路」。 2. 選擇「整份文件」與「逗點分隔值 (.csv)」。 3. 複製產生的網址。
+1. **下載專案**：將此專案下載到本地電腦。
+2. **開啟網頁**：直接雙擊 `index.html` 透過瀏覽器開啟（或使用 VS Code Live Server）。
+3. **開始學習**：
+   - 點擊 **「上一題 / 下一題」** 切換題目。
+   - 點擊 **卡片區域** 可翻面查看答案。
+   - 若為選擇題，直接點擊選項作答。
 
-| 欄位名稱 (Header) | 說明                | 範例內容                                  |
-| ----------------- | ------------------- | ----------------------------------------- |
-| `category`        | 學習分類            | AI 應用規劃師 / 英文 / 日文               |
-| `type`            | 模式                | `flashcard` (名詞解釋) 或 `quiz` (單選題) |
-| `question`        | 題目或單字          | 什麼是機器學習？ / Apple                  |
-| `options`         | 選項 (僅 quiz 使用) | 選項 A;選項 B;選項 C (以分號分隔)         |
-| `answer`          | 正確答案            | 答案內容                                  |
-| `note`            | 補充說明            | 相關章節或解釋                            |
+## ⚙️ 如何更換為自己的題庫
 
----
+本專案預設使用一個示範用的 Google Sheet。若要建立自己的題庫，請依照以下步驟操作：
 
-## 三、 核心邏輯設計 (JavaScript)
+### 1. 建立 Google Sheet
 
-### 1. 資料處理流程
+請建立一個新的 Google 試算表，並依照下列欄位結構填入資料（第一列必須是標題）：
 
-1. **Fetch：** 從 Google Sheets 網址抓取原始 CSV 文字。
-2. **Split：** 將文字按「行」拆分，再按「逗點」拆分出各欄位。
-3. **Map：** 將拆分後的資料轉換為 JavaScript 物件清單（Array of Objects）。
-4. **Render：** 根據資料的 `type` 決定要在畫面顯示「翻面卡片」還是「選擇題」。
+| 欄位名稱 (Header) | 說明 | 範例內容 |
+| :--- | :--- | :--- |
+| `category` | 分類 (選填) | 英文 / 程式設計 |
+| `type` | 題目類型 | `flashcard` (翻牌) 或 `quiz` (選擇題) |
+| `question` | 題目內容 | Apple |
+| `options` | 選項 (僅 quiz 需填) | 蘋果;香蕉;橘子 (選項間用**分號** `;` 分隔) |
+| `answer` | 正確答案 | 蘋果 |
+| `note` | 補充筆記 (選填) | 顯示在卡片背面的補充說明 |
 
-### 2. 資料轉換範例碼
+### 2. 發佈為 CSV
+
+1. 在 Google Sheet 點選 **「檔案」** > **「共用」** > **「發佈到網路」**。
+2. 選擇 **「整份文件」** (或指定工作表) 以及格式選擇 **「逗點分隔值 (.csv)」**。
+3. 點擊「發佈」並複製產生的連結。
+
+### 3. 更新程式設定
+
+打開專案中的 `script.js` 檔案，找到最上方的 `sheetUrl` 變數，將其替換為你的 CSV 連結：
 
 ```javascript
-// 負責抓取與解析資料的函數
-async function initData() {
-  const sheetUrl = "你的GoogleSheets發佈網址";
-
-  // 取得資料
-  const response = await fetch(sheetUrl);
-  const text = await response.text();
-
-  // 簡易 CSV 轉物件邏輯
-  const lines = text.split("\n");
-  const headers = lines[0].split(",").map((h) => h.trim());
-
-  const data = lines.slice(1).map((line) => {
-    const values = line.split(",");
-    let obj = {};
-    headers.forEach((h, i) => {
-      obj[h] = values[i] ? values[i].trim() : "";
-    });
-
-    // 處理選項：將 "A;B;C" 轉成 ["A", "B", "C"]
-    if (obj.options) {
-      obj.options = obj.options.split(";");
-    }
-    return obj;
-  });
-
-  console.log("資料準備就緒:", data);
-  return data;
-}
+// script.js
+const sheetUrl = '把你的_Google_Sheet_CSV_連結貼在這裡';
 ```
 
----
+存檔後重新整理網頁，即可看到你的題目。
 
-## 四、 程式碼審查與開發建議
-
-### 1. 檔案組織結構
-
-建議你的專案資料夾長這樣，保持簡單：
+## 📂 專案結構
 
 ```text
-/my-learning-app
-  ├── index.html   (網頁結構與內容)
-  ├── style.css    (外觀美化與翻轉動畫)
-  └── script.js    (抓取資料與互動邏輯)
-
+FlashcardMaster/
+├── index.html      # 主網頁 (HTML5)
+├── style.css       # 樣式表 (CSS3, 包含翻轉動畫與 RWD 設定)
+├── script.js       # 核心邏輯 (Fetch API, DOM 操作)
+└── README.md       # 專案說明文件
 ```
 
-### 2. 優良程式習慣提醒
+## 🛠️ 技術細節
 
-- **資料防錯：** 在 `split(',')` 時，如果你的題目內容本身包含逗點，可能會導致解析錯誤。建議未來可以使用 `PapaParse` 套件來處理複雜的 CSV。
-- **行動裝置優先 (Mobile First)：** 寫 CSS 時先考慮手機寬度，再調整電腦版的外觀。
-- **語義化標籤：** 使用 `<main>`, `<section>`, `<button>` 等標籤，這對手機的閱讀輔助工具非常友善。
+- **Core**: Vanilla JavaScript (ES6+)
+- **Data Fetching**: Fetch API
+- **Styling**: CSS Custom Properties (Variables), Flexbox, Grid, 3D Transforms
+
+## 📄 授權
+
+本專案採用 [MIT License](LICENSE) 授權。
+
+---
+*Happy Learning!*

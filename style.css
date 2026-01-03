@@ -134,7 +134,16 @@ h1 {
     padding-top: 20px;
     font-size: 0.85rem;
 }
-
+.note-style {
+    margin-top: 15px;          /* 與答案保持距離 */
+    padding-top: 15px;         /* 內距 */
+    border-top: 1px solid rgba(255, 255, 255, 0.3); /* 淡淡的分隔線 */
+    font-size: 0.9rem;         /* 字體稍微小一點點 */
+    color: rgba(255, 255, 255, 0.9); /* 稍微透明的白色 */
+    line-height: 1.5;
+    white-space: pre-wrap;     /* 關鍵：保留 Google Sheets 裡的換行 */
+    width: 100%;
+}
 /* =========================================
    4. 選擇題按鈕 (Quiz Options)
    ========================================= */
@@ -155,6 +164,31 @@ h1 {
     color: var(--text-main);
     transition: all 0.2s ease;
     cursor: pointer;
+}
+/* 答對按鈕 */
+.option-btn.option-correct {
+    background-color: var(--success) !important;
+    color: white !important;
+    border-color: var(--success) !important;
+    pointer-events: none; /* 防止重複點擊 */
+}
+
+/* 答錯按鈕 */
+.option-btn.option-wrong {
+    background-color: var(--error) !important;
+    color: white !important;
+    border-color: var(--error) !important;
+}
+
+/* 錯誤時的抖動效果 */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake-animation {
+    animation: shake 0.2s ease-in-out 0s 2;
 }
 
 .option-btn:hover {
