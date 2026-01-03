@@ -1,90 +1,209 @@
-/* 基本設定：使用變數方便以後改顏色，這是優良習慣 */
+/* =========================================
+   1. 設計規範 (Design Tokens)
+   ========================================= */
 :root {
-  --primary-color: #4a90e2;
-  --bg-color: #f5f7fa;
-  --card-white: #ffffff;
+    /* 色彩系統 */
+    --primary-color: #2c5282;    /* 學院藍：專業、沉穩 */
+    --bg-color: #f7fafc;         /* 淺米灰：降低視覺疲勞 */
+    --card-bg: #ffffff;          /* 純白卡片 */
+    --text-main: #2d3748;        /* 深碳藍：主要閱讀文字 */
+    --text-muted: #718096;       /* 灰藍色：正面提示文字 */
+    --text-inverse: #ffffff;     /* 反白文字：背面用 */
+    
+    /* 狀態色 */
+    --success: #38a169;
+    --error: #e53e3e;
+    --accent: #ebf8ff;           /* 點綴色：按鈕懸停 */
+
+    /* 間距與圓角 */
+    --radius: 16px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* =========================================
+   2. 基礎設定 (Reset & Base)
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* 確保 padding 不影響寬度 */
 }
 
 body {
-  font-family: "PingFang TC", sans-serif;
-  background-color: var(--bg-color);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
+    font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    min-height: 100vh;
 }
 
 .container {
-  width: 90%;
-  max-width: 400px; /* 電腦版限制寬度，手機版則佔滿 */
-  text-align: center;
+    width: 100%;
+    max-width: 450px; /* 針對手機與閱讀體驗最佳化的寬度 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* --- 3D 翻轉卡片核心程式碼 --- */
+h1 {
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+/* =========================================
+   3. 3D 卡片核心 (Flashcard System)
+   ========================================= */
 .card {
-  width: 100%;
-  height: 250px;
-  perspective: 1000px; /* 建立 3D 空間感 */
-  cursor: pointer;
-  margin-bottom: 30px;
+    width: 100%;
+    min-height: 350px; /* 給予足夠的起始高度 */
+    perspective: 1000px; /* 建立 3D 透視感 */
+    cursor: pointer;
+    margin-bottom: 25px;
 }
 
 .card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.6s; /* 翻轉速度：0.6秒 */
-  transform-style: preserve-3d; /* 告訴瀏覽器這是一個 3D 物體 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 15px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* 平滑翻轉動畫 */
+    transform-style: preserve-3d;
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
 }
 
-/* 當卡片具備 .is-flipped 這個類別時，旋轉 180 度 */
+/* 當 JS 切換 .is-flipped 時觸發翻轉 */
 .card.is-flipped .card-inner {
-  transform: rotateY(180deg);
+    transform: rotateY(180deg);
 }
 
 .card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden; /* 最重要！翻到背面時隱藏正面 */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  border-radius: 15px;
-  box-sizing: border-box; /* 確保 padding 不會撐破卡片 */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* 翻轉時隱藏另一面 */
+    border-radius: var(--radius);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* 從頂部開始排列內容 */
+    align-items: center;
+    overflow-y: auto; /* 若內容過長則顯示捲軸 */
 }
 
+/* 正面樣式 */
 .card-front {
-  background-color: var(--card-white);
-  color: #333;
+    background-color: var(--card-bg);
 }
 
+.card-front #question-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.card-front small {
+    color: var(--text-muted);
+    margin-top: auto; /* 推到最底部 */
+    padding-top: 20px;
+    font-size: 0.85rem;
+}
+
+/* 背面樣式 */
 .card-back {
-  background-color: var(--primary-color);
-  color: white;
-  transform: rotateY(180deg); /* 背面預設先轉 180 度藏起來 */
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    transform: rotateY(180deg); /* 預設先轉向背面 */
 }
 
-/* 按鈕樣式 */
+.card-back #answer-text {
+    font-size: 1.1rem;
+    text-align: left;
+    width: 100%;
+}
+
+.card-back small {
+    color: rgba(255, 255, 255, 0.7); /* 半透明白，增加層次感 */
+    margin-top: auto;
+    padding-top: 20px;
+    font-size: 0.85rem;
+}
+
+/* =========================================
+   4. 選擇題按鈕 (Quiz Options)
+   ========================================= */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+}
+
+.option-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 12px 15px;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.option-btn:hover {
+    background-color: var(--accent);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-1px); /* 輕微浮起感 */
+}
+
+/* =========================================
+   5. 底部控制按鈕 (Controls)
+   ========================================= */
+.controls {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
 .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 0 5px;
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+    background-color: var(--primary-color);
+    color: white;
 }
+
 .btn-secondary {
-  background-color: #ccc;
+    background-color: #e2e8f0;
+    color: var(--text-main);
+}
+
+.btn:active {
+    opacity: 0.8;
+}
+
+/* 針對小螢幕微調 */
+@media (max-width: 375px) {
+    .card {
+        min-height: 300px;
+    }
+    .card-face {
+        padding: 20px;
+    }
 }

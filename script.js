@@ -10,7 +10,7 @@ let currentIndex = 0; // 目前題號
 const questionEl = document.getElementById('question-text');
 const answerEl = document.getElementById('answer-text');
 const cardEl = document.getElementById('card');
-
+const optionsEl = document.getElementById('options-container');
 /**
  * 初始化：一進網站就執行
  */
@@ -56,11 +56,35 @@ function renderCard() {
 
     const currentData = questions[currentIndex];
     
-    // 填入文字
+    // 1. 基本文字顯示
     questionEl.innerText = currentData.question || "無題目";
     answerEl.innerText = currentData.answer || "無答案";
 
-    // 強制卡片翻回正面 (移除翻轉類別)
+    // 2. 清空之前的選項
+    optionsEl.innerHTML = '';
+
+    // 3. 判斷是否為選擇題 (quiz)
+    if (currentData.type === 'quiz' && currentData.options) {
+        // 將 A;B;C;D 拆分成陣列並產生按鈕
+        currentData.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            
+            // 這裡可以加一個簡單的點擊回饋
+            btn.onclick = (e) => {
+                e.stopPropagation(); // 防止觸發卡片翻面
+                if (opt === currentData.answer) {
+                    alert("答對了！");
+                } else {
+                    alert("再試試看喔！");
+                }
+            };
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    // 換題時回到正面
     cardEl.classList.remove('is-flipped');
 }
 
@@ -99,7 +123,13 @@ function parseCSV(text) {
         let obj = {};
         headers.forEach((h, i) => {
             // 將標題對應到數值
-            obj[h] = values[i] ? values[i].trim() : "";
+            let val = values[i] ? values[i].trim() : "";
+            if (h === 'options' && val !== "") {
+                // 將 "A;B;C" 轉換成 ["A", "B", "C"]
+                obj[h] = val.split(';'); 
+            } else {
+                obj[h] = val;
+            }
         });
         return obj;
     });
