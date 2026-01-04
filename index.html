@@ -38,7 +38,6 @@
             >
             <button 
                 type="button"
-                onclick="loadUserSheet()" 
                 class="btn-sm"
                 aria-label="載入題庫"
             >
@@ -84,7 +83,6 @@
             <button 
                 type="button"
                 class="btn btn-secondary" 
-                onclick="prevCard()"
                 aria-label="上一題"
                 title="上一題 (方向鍵 ←)"
             >
@@ -93,7 +91,6 @@
             <button 
                 type="button"
                 class="btn btn-shuffle" 
-                onclick="manualShuffle()"
                 aria-label="隨機洗牌"
                 title="隨機洗牌"
             >
@@ -102,7 +99,6 @@
             <button 
                 type="button"
                 class="btn btn-primary" 
-                onclick="nextCard()"
                 aria-label="下一題"
                 title="下一題 (方向鍵 →)"
             >
@@ -116,6 +112,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
