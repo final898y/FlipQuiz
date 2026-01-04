@@ -584,13 +584,24 @@ h1 {
    ============================================ */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    50% { transform: translateX(8px); }
-    75% { transform: translateX(-8px); }
+    10%, 90% { transform: translateX(-4px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-8px); }
+    40%, 60% { transform: translateX(8px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.98); }
+    100% { transform: scale(1); }
 }
 
 .shake-animation {
-    animation: shake 0.3s ease-in-out;
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transition: none !important; /* 強制關閉 transition 以避免干擾 */
 }
 
 /* 淡入動畫 */
@@ -709,15 +720,23 @@ h1 {
    減少動畫（無障礙）
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
+    /* 全域禁用動畫，但保留必要的狀態轉換 */
     *,
     *::before,
     *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
     
     .card-inner {
         transition: none;
+    }
+    
+    /* 例外：提供溫和的視覺回饋給 Reduced Motion 用戶 */
+    .shake-animation {
+        animation: pulse 0.3s ease-out !important; /* 使用 Pulse 代替 Shake */
+        animation-duration: 0.3s !important; /* 強制覆蓋全域的 0.01ms */
     }
 }
