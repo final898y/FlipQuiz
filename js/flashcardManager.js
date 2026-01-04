@@ -10,10 +10,10 @@ class FlashcardManager {
     }
 
     /** 初始化題目數據 */
-    init(data) {
+    init(data, shouldShuffle = true) {
         this.allQuestions = data;
         this.updateCachedCategories();
-        this.filterCategory("全部", true);
+        this.filterCategory("全部", shouldShuffle);
     }
 
     /** 更新快取的分類列表 */

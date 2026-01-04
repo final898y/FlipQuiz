@@ -1,6 +1,7 @@
 import { loadData } from './dataLoader.js';
 import { flashcardManager } from './flashcardManager.js';
 import { ui } from './ui.js';
+import { cache } from './cache.js';
 
 /** 更新 UI */
 function updateUI() {
@@ -27,6 +28,11 @@ async function loadUserSheet() {
         
         flashcardManager.init(questions);
         
+        // 儲存到快取
+        cache.saveSourceConfig('google_sheets', url);
+        cache.saveCardData(questions);
+        cache.saveCategoryProgress("全部", 0);
+        
         renderCategoriesWithEvents();
         updateUI();
 
@@ -52,7 +58,21 @@ function renderCategoriesWithEvents() {
         flashcardManager.getCategories(), 
         flashcardManager.currentCategory,
         (cat) => {
-            flashcardManager.filterCategory(cat);
+            // 讀取該分類上次的進度
+            const savedIndex = cache.getCategoryProgress(cat);
+
+            // 切換分類 (不自動洗牌，以維持順序)
+            flashcardManager.filterCategory(cat, false);
+            
+            // 恢復進度
+            flashcardManager.currentIndex = savedIndex;
+            if (flashcardManager.currentIndex >= flashcardManager.questions.length) {
+                flashcardManager.currentIndex = 0;
+            }
+
+            // 更新快取狀態 (設為當前分類)
+            cache.saveCategoryProgress(cat, flashcardManager.currentIndex);
+
             renderCategoriesWithEvents(); // Re-render to update active state
             updateUI();
         }
@@ -63,6 +83,9 @@ function renderCategoriesWithEvents() {
 function changeQuestion(step) {
     const hasNext = flashcardManager.changeQuestion(step);
     if (!hasNext) return;
+
+    // 儲存進度到快取 (包含目前分類)
+    cache.saveCategoryProgress(flashcardManager.currentCategory, flashcardManager.currentIndex);
 
     if (ui.elements.card.classList.contains("is-flipped")) {
         ui.elements.card.classList.remove("is-flipped");
@@ -81,6 +104,10 @@ function manualShuffle() {
         return;
     }
     flashcardManager.shuffleQuestions();
+    
+    // 洗牌後進度歸零，並更新快取
+    cache.saveCategoryProgress(flashcardManager.currentCategory, 0);
+    
     updateUI();
     
     // 簡單的通知 (可選)
@@ -147,6 +174,42 @@ function setupEventListeners() {
 // 啟動
 window.addEventListener("load", () => {
     setupEventListeners();
+    
+    // 嘗試從快取載入
+    const cached = cache.loadAll();
+
+    if (cached.sourceUrl) {
+        ui.setCsvUrl(cached.sourceUrl);
+    }
+
+    if (cached.cardData && cached.cardData.length > 0) {
+        // 從快取載入時不洗牌，以維持題目順序與索引的一致性
+        // 注意：init 預設會切換到 "全部"。如果 cached.currentCategory 不是 "全部"，我們需要再次篩選
+        flashcardManager.init(cached.cardData, false);
+        
+        // 取得上次分類
+        const targetCategory = cached.currentCategory || "全部";
+        
+        if (targetCategory !== "全部") {
+             flashcardManager.filterCategory(targetCategory, false);
+        }
+
+        // 嘗試恢復該分類的專屬進度
+        // 注意：loadAll 回傳的 currentIndex 是 "全域最後一次閱讀的 index"
+        // 為了確保一致性，我們再次呼叫 getCategoryProgress 確保拿到的是該分類的進度
+        const savedIndex = cache.getCategoryProgress(targetCategory);
+        
+        if (savedIndex >= 0 && savedIndex < flashcardManager.questions.length) {
+             flashcardManager.currentIndex = savedIndex;
+        } else {
+             flashcardManager.currentIndex = 0;
+        }
+        
+        renderCategoriesWithEvents();
+        updateUI();
+        console.log(`📦 已從快取載入上次資料 (分類: ${targetCategory}, 更新於: ${cache.getFormattedLastUpdate()})`);
+    }
+
     console.log("✅ 應用程式已啟動 (Modules)");
     ui.focusCard();
 });

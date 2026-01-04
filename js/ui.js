@@ -175,6 +175,11 @@ export const ui = {
     getCsvUrl() {
         return elements.csvInput.value.trim();
     },
+
+    /** 設定 CSV 輸入值 */
+    setCsvUrl(url) {
+        if (url) elements.csvInput.value = url;
+    },
     
     focusCard() {
         if(elements.card) elements.card.focus();

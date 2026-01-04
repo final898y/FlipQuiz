@@ -8,6 +8,9 @@
 - **免修改程式碼**：直接在網頁介面輸入 Google Sheets CSV 網址即可載入題庫，切換不同題庫更方便。
 - **深色模式 (Dark Mode)**：依照系統設定自動切換深色/淺色主題，保護眼睛。
 - **智慧分類**：自動偵測題庫中的分類標籤，可隨時篩選特定單元進行練習。
+- **智慧快取與進度記憶**：
+  - **獨立進度**：系統會分別記住每一個分類的閱讀進度（例如：「歷史」讀到第 5 題，「英文」讀到第 10 題），切換時自動跳轉。
+  - **狀態還原**：重新整理網頁後，完美還原上次所在的分類與卡片。
 - **雙重學習模式**：
   - **翻卡模式 (Flashcard)**：經典的翻牌記憶法，點擊翻面查看答案與補充筆記。
   - **測驗模式 (Quiz)**：支援選擇題互動，答對自動翻面，答錯震動提示。
@@ -56,13 +59,19 @@
 FlipQuiz/
 ├── index.html      # 主應用程式介面 (語意化 HTML5)
 ├── style.css       # 視覺樣式 (CSS Variables, Dark Mode, RWD)
-├── script.js       # 核心邏輯 (CSV Parser, DOM 操作, 事件處理)
+├── js/             # 模組化 JavaScript (ES6 Modules)
+│   ├── main.js             # 主程式入口與事件綁定
+│   ├── ui.js               # UI 渲染與 DOM 操作
+│   ├── flashcardManager.js # 題庫狀態管理
+│   ├── dataLoader.js       # 資料非同步載入
+│   ├── utils.js            # 通用工具 (CSV 解析、洗牌)
+│   └── cache.js            # 快取管理 (開發中)
 └── README.md       # 說明文件
 ```
 
 ## 🛠️ 技術棧
 
-- **Core**: Vanilla JavaScript (ES6+)
+- **Core**: Vanilla JavaScript (ES6+ Modules)
 - **UI/UX**: CSS3 (Grid/Flexbox), 3D Transforms, Responsive Design
 - **Data**: Google Sheets CSV Feed
 
