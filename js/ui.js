@@ -12,6 +12,23 @@ const elements = {
   csvInput: document.getElementById("csv-url-input"),
   cardFront: document.querySelector(".card-front"),
   cardBack: document.querySelector(".card-back"),
+  
+  // 新增元素
+  dashboard: {
+    due: document.getElementById("count-due"),
+    new: document.getElementById("count-new"),
+    mastered: document.getElementById("count-mastered")
+  },
+  modeSwitcher: {
+    container: document.getElementById("mode-switcher"),
+    btns: document.querySelectorAll(".mode-btn")
+  },
+  controls: {
+    browse: document.getElementById("browse-controls"),
+    srs: document.getElementById("srs-controls")
+  },
+  reviewComplete: document.getElementById("review-complete"),
+  frontHint: document.querySelector(".card-front .card-hint")
 };
 
 export const ui = {
@@ -38,6 +55,42 @@ export const ui = {
       elements.loadBtn.classList.remove("loading");
       elements.loadBtn.disabled = false;
     }
+  },
+
+  /** 更新 Dashboard 數據 */
+  updateDashboard(stats) {
+    elements.dashboard.due.textContent = stats.due || 0;
+    elements.dashboard.new.textContent = stats.new || 0;
+    elements.dashboard.mastered.textContent = stats.mastered || 0;
+  },
+
+  /** 設定 UI 模式 (browse | review) */
+  setMode(mode) {
+    // 更新切換器狀態
+    elements.modeSwitcher.btns.forEach(btn => {
+      const isActive = btn.dataset.mode === mode;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-selected", isActive);
+    });
+
+    // 切換底部控制列
+    if (mode === 'review') {
+      elements.controls.browse.classList.add("hidden");
+      elements.controls.srs.classList.remove("hidden");
+    } else {
+      elements.controls.browse.classList.remove("hidden");
+      elements.controls.srs.classList.add("hidden");
+      elements.reviewComplete.classList.add("hidden");
+      elements.card.classList.remove("hidden");
+    }
+  },
+
+  /** 顯示複習完成畫面 */
+  showReviewComplete() {
+    elements.card.classList.add("hidden");
+    elements.reviewComplete.classList.remove("hidden");
+    elements.controls.srs.classList.add("hidden"); // 隱藏評分按鈕
+    elements.progress.textContent = "今日剩餘: 0 題";
   },
 
   /** 渲染分類標籤 */
@@ -72,7 +125,18 @@ export const ui = {
   },
 
   /** 渲染卡片內容 */
-  renderCard(data, status) {
+  renderCard(data, status, mode = 'browse') {
+    // 若複習模式且無卡片，顯示完成畫面
+    if (mode === 'review' && !data) {
+        ui.showReviewComplete();
+        return;
+    }
+
+    // 恢復顯示卡片（可能從完成畫面切換回來）
+    elements.card.classList.remove("hidden");
+    elements.reviewComplete.classList.add("hidden");
+
+    // 處理無題目的情況 (Browse Mode)
     if (!status.hasQuestions) {
       elements.progress.textContent = "目前沒有題目";
       elements.question.textContent = "請選擇其他分類或重新載入題庫";
@@ -121,12 +185,26 @@ export const ui = {
       });
     }
 
-    elements.progress.textContent = `第 ${status.current} / ${status.total} 題 (${status.category})`;
+    // 更新進度文字
+    if (mode === 'review') {
+        elements.progress.textContent = `今日剩餘: ${status.remaining} 題`;
+    } else {
+        elements.progress.textContent = `第 ${status.current} / ${status.total} 題 (${status.category})`;
+    }
+    
+    // 重置翻面狀態
     elements.card.classList.remove("is-flipped");
-
-    // 更新 ARIA 屬性
     elements.cardFront.setAttribute("aria-hidden", "false");
     elements.cardBack.setAttribute("aria-hidden", "true");
+
+    // 根據模式更新提示文字
+    if (mode === 'review') {
+        elements.frontHint.textContent = "🤔 思考答案後，點擊翻面";
+        // 隱藏 SRS 按鈕直到翻面
+        elements.controls.srs.classList.add("hidden"); 
+    } else {
+        elements.frontHint.textContent = "正面：題目 (點擊翻面)";
+    }
   },
 
   /** 處理選擇題點擊 */
@@ -160,15 +238,13 @@ export const ui = {
 
       clickedBtn.disabled = true;
       clickedBtn.style.pointerEvents = "none";
-      // 移除 opacity 變淡，讓錯誤震動看清楚一點，改為僅改變游標
-      // clickedBtn.style.opacity = "0.5";
-
+      
       clickedBtn.setAttribute(
         "aria-label",
         clickedBtn.getAttribute("aria-label") + " - 錯誤"
       );
 
-      setTimeout(() => clickedBtn.classList.remove("shake-animation"), 500000);
+      setTimeout(() => clickedBtn.classList.remove("shake-animation"), 500);
     }
   },
 
@@ -178,6 +254,19 @@ export const ui = {
     // 更新 ARIA 屬性
     elements.cardFront.setAttribute("aria-hidden", isFlipped);
     elements.cardBack.setAttribute("aria-hidden", !isFlipped);
+
+    // 檢查目前模式 (透過 DOM 狀態判斷)
+    const isReviewMode = document.querySelector('.mode-btn[data-mode="review"]').classList.contains('active');
+
+    if (isReviewMode) {
+        if (isFlipped) {
+            // 翻到背面 -> 顯示 SRS 按鈕
+            elements.controls.srs.classList.remove("hidden");
+        } else {
+            // 翻回正面 -> 隱藏 SRS 按鈕
+            elements.controls.srs.classList.add("hidden");
+        }
+    }
   },
 
   /** 取得 CSV 輸入值 */
