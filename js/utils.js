@@ -1,3 +1,5 @@
+import { createFlashcard } from "./models/flashcardFactory.js";
+
 /** 工具：洗牌演算法 */
 export function shuffleArray(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -6,15 +8,31 @@ export function shuffleArray(arr) {
   }
 }
 
-/** 工具：強化版 CSV 解析器 */
+/**
+ * 解析 CSV 文字並轉為 Flashcard 陣列
+ *
+ * @param {string} text CSV 原始文字
+ * @returns {{
+ *   data: import("../models/flashcard.js").Flashcard[],
+ *   report: {
+ *     total: number,
+ *     updatedDates: number,
+ *     errors: number
+ *   }
+ * }}
+ */
 export function parseCSV(text) {
-  const lines = text.split("\n").filter((l) => l.trim() !== "");
+  // ---------- 0. 基本防禦 ----------
+  if (typeof text !== "string" || text.trim() === "") {
+    throw new Error("CSV 內容為空或格式不正確");
+  }
 
+  const lines = text.split("\n").filter((l) => l.trim() !== "");
   if (lines.length === 0) {
     throw new Error("CSV 檔案為空");
   }
 
-  // 1. 解析並標準化 Header (轉小寫、去空白)
+  // ---------- 1. 解析並標準化 Header ----------
   const rawHeaders = parseCsvLine(lines[0]);
   const headers = rawHeaders.map((h) => h.toLowerCase().trim());
 
@@ -22,7 +40,7 @@ export function parseCSV(text) {
     throw new Error("CSV 標題行無效");
   }
 
-  // 2. 驗證必要欄位
+  // ---------- 2. 驗證必要欄位 ----------
   const requiredFields = ["type", "question", "answer"];
   const missingFields = requiredFields.filter(
     (field) => !headers.includes(field)
@@ -34,87 +52,84 @@ export function parseCSV(text) {
     );
   }
 
+  // ---------- 3. 初始化結果與統計 ----------
   const results = [];
-  // 取得「今天」的日期物件，並將時間設定為 00:00:00，確保只比對日期
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const stats = {
     total: 0,
-    updatedDates: 0, // 用來記錄有多少張卡片日期被校正了
+    updatedDates: 0,
     errors: 0,
   };
 
+  // 固定今天為本地午夜，避免時區問題
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // ---------- 4. 逐行解析 ----------
   for (let i = 1; i < lines.length; i++) {
     try {
       const values = parseCsvLine(lines[i]);
+      const rawData = {};
 
-      // 3. 建立基礎物件並填入預設值 (SRS 欄位預設值)
-      const obj = {
-        uid: null, // 稍後若為空則自動產生
-        category: "Default",
-        type: "flashcard",
-        question: "",
-        answer: "",
-        options: [],
-        note: "",
-        srs_level: 0, // 預設為未學習
-        next_review: null, // 無下次複習日
-        interval: 0,
-        easiness: 2.5,
-      };
-
-      // 4. 填入 CSV 實際數據
       headers.forEach((header, idx) => {
-        const value = values[idx] ? values[idx].trim() : "";
-        if (value === "") return; // 跳過空值，保留預設值
+        const value = values[idx]?.trim();
+        if (!value) return; // 空值直接略過，交給 model 補預設
 
-        if (header === "options") {
-          obj[header] = value
-            .split(";")
-            .map((o) => o.trim())
-            .filter((o) => o !== "");
-        } else if (header === "next_review") {
-          const inputDate = new Date(value);
-          // 檢查日期是否有效 (isNaN 代表 "Not a Number")
-          if (!isNaN(inputDate.getTime())) {
-            if (inputDate < today) {
-              // 如果比今天早，自動設為今天 (格式化為 YYYY-MM-DD)
-              obj[header] = today.toISOString().split("T")[0];
-              console.info(
-                `第 ${i + 1} 行日期 [${value}] 已過期，已自動校正為今天。`
-              );
-              stats.updatedDates++;
+        switch (header) {
+          case "options":
+            rawData.options = value
+              .split(";")
+              .map((o) => o.trim())
+              .filter(Boolean);
+            break;
+
+          case "next_review": {
+            const inputDate = new Date(value);
+            if (!isNaN(inputDate.getTime())) {
+              inputDate.setHours(0, 0, 0, 0);
+              if (inputDate < today) {
+                rawData.next_review = formatDate(today);
+                stats.updatedDates++;
+              } else {
+                rawData.next_review = formatDate(inputDate);
+              }
             } else {
-              // 否則，使用原來的有效日期
-              obj[header] = inputDate.toISOString().split("T")[0];
+              console.warn(
+                `第 ${i + 1} 行日期格式錯誤: "${value}"，已設為 null`
+              );
+              rawData.next_review = null;
             }
-          } else {
-            console.warn(`第 ${i + 1} 行日期格式錯誤: "${value}"，已設為 null`);
-            obj[header] = null;
+            break;
           }
-        } else if (header === "srs_level" || header === "interval") {
-          obj[header] = parseInt(value, 10) || 0;
-        } else if (header === "easiness") {
-          obj[header] = parseFloat(value) || 2.5;
-        } else {
-          // 其他文字欄位直接寫入 (包含 uid, question, answer, note, category)
-          obj[header] = value;
+
+          case "srs_level":
+          case "interval":
+            rawData[header] = parseInt(value, 10) || 0;
+            break;
+
+          case "easiness":
+            rawData.easiness = value ? parseFloat(value) : undefined;
+            break;
+
+          default:
+            rawData[header] = value;
         }
       });
 
-      // 5. 資料補全與後處理
-      // 如果沒有 UID，使用行號 (i) 作為暫時 ID
-      if (!obj.uid) {
-        obj.uid = generateUUID();
+      // ---------- 5. 建立標準化 Flashcard ----------
+      const card = createFlashcard(rawData);
+
+      // 補 UID（若 CSV 沒給）
+      if (!card.uid) {
+        card.uid = generateUUID();
       }
 
-      // 再次確認關鍵數據存在 (雖然 Header 檢查過了，但該行可能數據為空)
-      if (obj.question && obj.answer) {
-        results.push(obj);
+      // ---------- 6. 最終驗證 ----------
+      if (card.question && card.answer) {
+        results.push(card);
         stats.total++;
       }
-    } catch (e) {
-      console.warn(`解析第 ${i + 1} 行時出錯:`, e);
+    } catch (err) {
+      console.warn(`解析第 ${i + 1} 行時出錯:`, err);
       stats.errors++;
     }
   }
@@ -125,7 +140,17 @@ export function parseCSV(text) {
   };
 }
 
-/** 解析單行 CSV（處理引號內的逗號） */
+/* ============================================================
+ * Helper Functions
+ * ============================================================
+ */
+
+/**
+ * 解析單行 CSV（支援基本引號）
+ *
+ * @param {string} line
+ * @returns {string[]}
+ */
 function parseCsvLine(line) {
   const result = [];
   let current = "";
@@ -133,25 +158,35 @@ function parseCsvLine(line) {
 
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
-    const nextChar = line[i + 1];
 
     if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === "," && !inQuotes) {
-      result.push(current.trim());
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      result.push(current);
       current = "";
     } else {
       current += char;
     }
   }
 
-  result.push(current.trim());
+  result.push(current);
   return result;
+}
+
+/**
+ * 將 Date 物件轉為 YYYY-MM-DD（本地時間）
+ *
+ * @param {Date} date
+ * @returns {string}
+ */
+function formatDate(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 /** * 產生唯一識別碼 (UUID v4)
