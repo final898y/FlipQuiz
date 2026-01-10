@@ -1,3 +1,5 @@
+import { createFlashcard } from "./models/flashcardFactory.js";
+
 /**
  * SRS 設定常數
  * 集中管理「魔法數字」，避免散落在程式中
@@ -17,72 +19,60 @@ const SRS_CONFIG = {
 export const SRS = {
   /**
    * 計算下一次複習的 SRS 數據
-   *
-   * @param {Object} item
-   * @param {number|string} item.srs_level - 目前的 SRS 等級
-   * @param {number|string} item.easiness - 目前的 EF
-   * @param {number|string} item.interval - 上一次的間隔天數
-   * @param {number} q - 使用者評分（0, 2, 4, 5）
-   * @returns {Object} 更新後的 SRS 資料
+   * * @param {Object} incomingData - 傳入的卡片資料（可以是部分或不完整物件）
+   * @param {number} q - 使用者評分 (0-5)
+   * @returns {Object} 更新後的全新標準化 Flashcard 物件
    */
-  calculate(item, q) {
-    // --- 1. 防禦式處理輸入資料（避免 NaN 傳染） ---
-
-    const currentLevel = Number(item?.srs_level) || 0;
-    const currentEF = Number(item?.easiness) || SRS_CONFIG.DEFAULT_EF;
-    const prevInterval = Number(item?.interval) || 0;
+  calculateNextReview(incomingData, q) {
+    // 1. 防禦性程式設計：先將傳入資料「清洗」成標準卡片格式
+    // 就算 incomingData 是 {} 或缺漏欄位，card 也會有正確的數字型別與預設值
+    const card = createFlashcard(incomingData);
 
     const quality = Number(q);
-
-    // 驗證評分是否合法（邏輯錯誤，應該直接中斷）
     if (!SRS_CONFIG.VALID_QUALITY.includes(quality)) {
-      throw new Error(`Invalid SRS quality value: ${quality}`);
+      throw new Error(`[SRS] 無效的評分值: ${quality}`);
     }
 
-    let nextLevel = currentLevel;
-    let nextEF = currentEF;
-    let nextInterval = 0;
+    // 從已清洗的 card 物件中解構資料
+    let {
+      srs_level: nextLevel,
+      easiness: nextEF,
+      interval: nextInterval,
+    } = card;
 
-    // --- 2. 計算新的 EF（易難度因子） ---
-    // SM-2 原始公式：
-    // EF' = EF + (0.1 - (5-q)*(0.08 + (5-q)*0.02))
-
+    // 2. 計算新的 EF (Easiness Factor)
     if (quality >= 3) {
       nextEF = nextEF + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
     } else {
-      // 答錯或太吃力 → 顯著降低 EF
       nextEF = nextEF - SRS_CONFIG.EF_PENALTY;
     }
 
-    // 保護 EF 下限
-    if (nextEF < SRS_CONFIG.MIN_EF) {
-      nextEF = SRS_CONFIG.MIN_EF;
-    }
+    // 保護下限
+    nextEF = Math.max(SRS_CONFIG.MIN_EF, nextEF);
 
-    // --- 3. 決定下一次複習間隔 ---
+    // 3. 決定下一次複習間隔
     if (quality < 3) {
-      // 答錯：重來，明天再測
       nextLevel = 0;
       nextInterval = SRS_CONFIG.FIRST_INTERVAL;
     } else {
-      // 答對：依等級擴展間隔
-      if (currentLevel === 0) {
+      if (nextLevel === 0) {
         nextInterval = SRS_CONFIG.FIRST_INTERVAL;
-      } else if (currentLevel === 1) {
+      } else if (nextLevel === 1) {
         nextInterval = SRS_CONFIG.SECOND_INTERVAL;
       } else {
-        nextInterval = Math.round(prevInterval * nextEF);
+        nextInterval = Math.round(card.interval * nextEF);
       }
       nextLevel++;
     }
 
-    // --- 4. 回傳全新的 SRS 狀態（不修改原物件） ---
-    return {
+    // 4. 回傳全新物件：結合舊資料與新算出的 SRS 數值
+    return createFlashcard({
+      ...card, // 保留題目、答案、UID 等不變資訊
       srs_level: nextLevel,
-      easiness: Number(nextEF.toFixed(2)), // 固定兩位小數，並轉回 number
+      easiness: Number(nextEF.toFixed(2)),
       interval: nextInterval,
-      next_review: this.getFutureDate(nextInterval),
-    };
+      next_review: getFutureDate(nextInterval),
+    });
   },
 
   /**

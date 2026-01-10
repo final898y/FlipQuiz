@@ -107,7 +107,7 @@ class FlashcardManager {
 
     const currentCard = this.getCurrentData();
     if (!currentCard) return false;
-    const updatedSrs = SRS.calculate(currentCard, rating);
+    const updatedCard = SRS.calculateNextReview(currentCard, rating);
     //後續待更新資料庫或 CSV
     // 模擬更新 (暫存於記憶體，未寫回 CSV)
     // 這裡可以根據 rating (1-4) 更新 next_review
