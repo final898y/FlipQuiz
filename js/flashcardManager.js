@@ -1,5 +1,6 @@
 import { shuffleArray, isDue } from "./utils.js";
 import { SRS } from "./srs.js";
+import { cache } from "./cache.js";
 
 class FlashcardManager {
   constructor() {
@@ -60,47 +61,11 @@ class FlashcardManager {
         return false;
       }
 
-      const isNewCard = q.srs_level === 0;
+      const isNewCard = q.attempts === 0;
       const isDueCard = isDue(q.next_review);
       // 包含 "新卡片" 或 "到期卡片" (甚至是 "過期卡片")
       return isNewCard || isDueCard;
     });
-  }
-
-  /**
-   * 取得指定分類的 Dashboard 統計數據
-   * @returns {Object} 包含 {due, newCount, mastered} 的統計物件
-   */ getDashboardStats() {
-    let due = 0;
-    let newCount = 0;
-    let mastered = 0;
-    this.allQuestions.forEach((q) => {
-      // 1. 分類過濾邏輯
-      if (
-        this.currentCategory !== "全部" &&
-        q.category !== this.currentCategory
-      ) {
-        return;
-      }
-
-      const srsLevel = parseInt(q.srs_level) || 0;
-      const interval = parseInt(q.interval) || 0;
-
-      const isDueCard = isDue(q.next_review);
-
-      // 2. 核心狀態判定
-      if (srsLevel === 0 && !q.next_review) {
-        // 1. 新卡片：Level 為 0 且「從未有過下次複習日期」
-        //待更新，建議csv中增加attempts (練習次數) 欄位
-        newCount++;
-      } else if (isDueCard) {
-        due++;
-      } else if (interval >= this.masteredThreshold) {
-        mastered++;
-      }
-    });
-
-    return { due, new: newCount, mastered };
   }
 
   /** 處理 SRS 評分 */
@@ -117,6 +82,7 @@ class FlashcardManager {
     );
     if (masterIndex !== -1) {
       this.allQuestions[masterIndex] = updatedCard;
+      cache.saveCardData(this.allQuestions);
     }
 
     // 3. 佇列管理：移除目前卡片
@@ -125,7 +91,7 @@ class FlashcardManager {
 
     // 4. 特殊規則：如果評分為 "重來 (Again/1)"，將卡片重新排入佇列尾端
     // 這樣使用者在同一個 Session 內會再次看到它
-    if (rating === 1) {
+    if (rating === 0) {
       this.questions.push(updatedCard);
     }
 
@@ -147,6 +113,42 @@ class FlashcardManager {
         .filter((c) => c && c.trim() !== "")
     );
     this.cachedCategories = ["全部", ...Array.from(categorySet)];
+  }
+
+  /**
+   * 取得指定分類的 Dashboard 統計數據
+   * @returns {Object} 包含 {due, newCount, mastered} 的統計物件
+   */ getDashboardStats() {
+    let due = 0;
+    let newCount = 0;
+    let mastered = 0;
+    let masteredThreshold = 21; // 間隔超過 21 天就視為已精通
+
+    this.allQuestions.forEach((q) => {
+      // 1. 分類過濾邏輯
+      if (
+        this.currentCategory !== "全部" &&
+        q.category !== this.currentCategory
+      ) {
+        return;
+      }
+
+      const interval = parseInt(q.interval) || 0;
+      const attempts = parseInt(q.attempts) || 0;
+      const isDueCard = isDue(q.next_review);
+
+      // 2. 核心狀態判定
+      if (attempts === 0) {
+        // 1. 新卡片：Level 為 0 且「從未有過下次複習日期」
+        newCount++;
+      } else if (isDueCard) {
+        due++;
+      } else if (interval >= masteredThreshold) {
+        mastered++;
+      }
+    });
+
+    return { due, new: newCount, mastered };
   }
 
   /** 分類與篩選 */
@@ -218,7 +220,7 @@ class FlashcardManager {
       current: this.currentIndex + 1,
       category: this.currentCategory,
       hasQuestions: this.questions.length > 0,
-      remaining: this.questions.length - this.currentIndex, // For Review Mode
+      remaining: this.questions.length, // For Review Mode
     };
   }
 

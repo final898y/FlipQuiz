@@ -44,6 +44,7 @@ export const CardType = {
  * @param {string|null} [data.next_review=null] - 複習日期
  * @param {number} [data.interval=0] - 間隔天數
  * @param {number} [data.easiness=2.5] - 難易度
+ * @property {number} attempts 總嘗試次數
  * * @returns {Readonly<Flashcard>} 標準化後的物件
  */
 export function createFlashcard(data = {}) {
@@ -92,6 +93,7 @@ export function createFlashcard(data = {}) {
     next_review: formatDate(finalReviewDate),
     interval: Math.max(0, Number(data.interval) || 0),
     easiness: Number(data.easiness) || 2.5,
+    attempts: Math.max(0, Number(data.attempts) || 0),
   };
 
   // 封鎖物件結構，防止意外修改

@@ -54,11 +54,12 @@ export const SRS = {
     if (quality < 3) {
       if (quality === 0) {
         nextLevel = 0; // 按 1：徹底忘記，打回原形
+        nextInterval = 0;
       } else {
         // 按 2：很吃力，但維持在 Level 1 或是至少標記為「已啟動」
         nextLevel = Math.max(1, nextLevel);
+        nextInterval = SRS_CONFIG.FIRST_INTERVAL;
       }
-      nextInterval = SRS_CONFIG.FIRST_INTERVAL;
     } else {
       if (nextLevel === 0) {
         nextInterval = SRS_CONFIG.FIRST_INTERVAL;
@@ -77,6 +78,7 @@ export const SRS = {
       easiness: Number(nextEF.toFixed(2)),
       interval: nextInterval,
       next_review: getFutureDate(nextInterval),
+      attempts: card.attempts + 1,
     });
   },
 };
