@@ -1,5 +1,5 @@
 import { createFlashcard } from "./models/flashcardFactory.js";
-
+import { getFutureDate } from "./utils.js";
 /**
  * SRS 設定常數
  * 集中管理「魔法數字」，避免散落在程式中
@@ -52,7 +52,12 @@ export const SRS = {
 
     // 3. 決定下一次複習間隔
     if (quality < 3) {
-      nextLevel = 0;
+      if (quality === 0) {
+        nextLevel = 0; // 按 1：徹底忘記，打回原形
+      } else {
+        // 按 2：很吃力，但維持在 Level 1 或是至少標記為「已啟動」
+        nextLevel = Math.max(1, nextLevel);
+      }
       nextInterval = SRS_CONFIG.FIRST_INTERVAL;
     } else {
       if (nextLevel === 0) {
@@ -73,25 +78,5 @@ export const SRS = {
       interval: nextInterval,
       next_review: getFutureDate(nextInterval),
     });
-  },
-
-  /**
-   * 取得「今天 + N 天」的 YYYY-MM-DD（本地時間安全版）
-   *
-   * @param {number} days
-   * @returns {string}
-   */
-  getFutureDate(days) {
-    const date = new Date();
-
-    // 固定在本地午夜，避免 toISOString 的 UTC 時區陷阱
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() + days);
-
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-
-    return `${yyyy}-${mm}-${dd}`;
   },
 };

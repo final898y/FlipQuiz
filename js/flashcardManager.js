@@ -1,4 +1,4 @@
-import { shuffleArray } from "./utils.js";
+import { shuffleArray, isDue } from "./utils.js";
 import { SRS } from "./srs.js";
 
 class FlashcardManager {
@@ -17,11 +17,10 @@ class FlashcardManager {
     // 預處理數據：確保 SRS 欄位存在
     this.allQuestions = data.map((q, index) => ({
       ...q,
-      uid: q.uid || index, // 確保有 ID
+      uid: q.uid ?? index, // 確保有 ID
       srs_level: parseInt(q.srs_level) || 0,
       next_review: q.next_review || null,
     }));
-
     this.updateCachedCategories();
 
     // 預設進入瀏覽模式
@@ -47,13 +46,6 @@ class FlashcardManager {
 
   /** 建立複習佇列 (Due + New) */
   buildReviewQueue() {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0); // 固定在本地午夜
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    const today = `${yyyy}-${mm}-${dd}`;
-
     // 篩選條件：
     // 1. New: srs_level === 0
     // 2. Due: next_review <= today
@@ -68,57 +60,83 @@ class FlashcardManager {
         return false;
       }
 
-      const isNew = q.srs_level === 0;
-      const isDue = q.next_review && q.next_review <= today;
-
+      const isNewCard = q.srs_level === 0;
+      const isDueCard = isDue(q.next_review);
       // 包含 "新卡片" 或 "到期卡片" (甚至是 "過期卡片")
-      return isNew || isDue;
+      return isNewCard || isDueCard;
     });
   }
 
-  /** 取得 Dashboard 統計數據 */
-  getDashboardStats() {
-    const today = new Date().toISOString().split("T")[0];
-
+  /**
+   * 取得指定分類的 Dashboard 統計數據
+   * @returns {Object} 包含 {due, newCount, mastered} 的統計物件
+   */ getDashboardStats() {
     let due = 0;
-    let newCards = 0;
+    let newCount = 0;
     let mastered = 0;
-
     this.allQuestions.forEach((q) => {
-      const isNew = !q.srs_level || q.srs_level === 0;
-      const isDue = q.next_review && q.next_review <= today;
+      // 1. 分類過濾邏輯
+      if (
+        this.currentCategory !== "全部" &&
+        q.category !== this.currentCategory
+      ) {
+        return;
+      }
 
-      if (isNew) {
-        newCards++;
-      } else if (isDue) {
+      const srsLevel = parseInt(q.srs_level) || 0;
+      const interval = parseInt(q.interval) || 0;
+
+      const isDueCard = isDue(q.next_review);
+
+      // 2. 核心狀態判定
+      if (srsLevel === 0 && !q.next_review) {
+        // 1. 新卡片：Level 為 0 且「從未有過下次複習日期」
+        //待更新，建議csv中增加attempts (練習次數) 欄位
+        newCount++;
+      } else if (isDueCard) {
         due++;
-      } else {
+      } else if (interval >= this.masteredThreshold) {
         mastered++;
       }
     });
 
-    return { due, new: newCards, mastered };
+    return { due, new: newCount, mastered };
   }
 
   /** 處理 SRS 評分 */
   handleSrsAction(rating) {
-    // TODO: 實作真正的 SM-2 演算法
-    // 目前僅做簡單模擬：評分後從佇列移除，進入下一張
-
     const currentCard = this.getCurrentData();
     if (!currentCard) return false;
+
+    // 1. 計算新的 SRS 數據
     const updatedCard = SRS.calculateNextReview(currentCard, rating);
-    //後續待更新資料庫或 CSV
-    // 模擬更新 (暫存於記憶體，未寫回 CSV)
-    // 這裡可以根據 rating (1-4) 更新 next_review
-    console.log(`SRS Action: Card ${currentCard.question}, Rating: ${rating}`);
 
-    // 在複習模式下，這張卡片處理完了，應該從當前佇列隱藏或標記
-    // 但為了簡單 UI 操作，我們直接往後走。
-    // 如果要做到 "處理完就消失"，我們可以在 changeQuestion 時跳過已處理的。
-    // 目前先單純切換下一張。
+    // 2. 同步更新 Master List (確保資料一致性)
+    const masterIndex = this.allQuestions.findIndex(
+      (q) => q.uid === currentCard.uid
+    );
+    if (masterIndex !== -1) {
+      this.allQuestions[masterIndex] = updatedCard;
+    }
 
-    return this.changeQuestion(1);
+    // 3. 佇列管理：移除目前卡片
+    // 使用 splice 移除後，陣列會自動遞補，原本的 index 就會指向下一張卡片
+    this.questions.splice(this.currentIndex, 1);
+
+    // 4. 特殊規則：如果評分為 "重來 (Again/1)"，將卡片重新排入佇列尾端
+    // 這樣使用者在同一個 Session 內會再次看到它
+    if (rating === 1) {
+      this.questions.push(updatedCard);
+    }
+
+    // 5. 指標修正
+    // 只有當剛才刪除的是最後一張（且沒有 push 新的）時，需要歸零或檢查邊界
+    if (this.currentIndex >= this.questions.length) {
+      this.currentIndex = 0;
+    }
+
+    // 6. 檢查是否完成 (若佇列長度 > 0 代表還有題目)
+    return this.questions.length > 0;
   }
 
   /** 更新快取的分類列表 */

@@ -12,6 +12,7 @@ function updateUI() {
 
   // 同步更新 Dashboard (雖然數字可能沒變，但確保一致)
   const stats = flashcardManager.getDashboardStats();
+  console.log("更新 Dashboard:", stats);
   ui.updateDashboard(stats);
 }
 

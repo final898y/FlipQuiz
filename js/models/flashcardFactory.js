@@ -3,6 +3,7 @@
  * Flashcard & Quiz 資料模型
  * * 本模組負責定義與標準化學習資料結構。
  */
+import { generateUUID, formatDate, toDateOrNull } from "../utils.js";
 
 /**
  * 支援的題目類型列舉
@@ -63,10 +64,17 @@ export function createFlashcard(data = {}) {
   const validTypes = Object.values(CardType);
   const type = validTypes.includes(data.type) ? data.type : CardType.FLASHCARD;
 
+  let finalReviewDate = toDateOrNull(data.next_review);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (finalReviewDate === null || finalReviewDate < today) {
+    finalReviewDate = today;
+  }
+
   // 封裝物件
   const flashcard = {
     // 識別與分類
-    uid: data.uid ?? null,
+    uid: data.uid ?? generateUUID(),
     category: data.category ?? "Default",
     type: type,
 
@@ -81,7 +89,7 @@ export function createFlashcard(data = {}) {
 
     // SRS 學習演算法欄位
     srs_level: Math.max(0, Number(data.srs_level) || 0),
-    next_review: data.next_review ?? null,
+    next_review: formatDate(finalReviewDate),
     interval: Math.max(0, Number(data.interval) || 0),
     easiness: Number(data.easiness) || 2.5,
   };
