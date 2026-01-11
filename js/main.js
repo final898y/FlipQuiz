@@ -8,13 +8,22 @@ import { exportToCSV, getFutureDate } from "./utils.js";
 function updateUI() {
   const data = flashcardManager.getCurrentData();
   const status = flashcardManager.getStatus();
-  // 傳入目前的模式 (browse | review)
   ui.renderCard(data, status, flashcardManager.mode);
 
-  // 同步更新 Dashboard (雖然數字可能沒變，但確保一致)
+  // 如果是測驗模式，更新記分板
+  if (flashcardManager.mode === 'exam') {
+      ui.updateScoreboard(flashcardManager.examStats);
+  }
+
+  // 同步更新 Dashboard
   const stats = flashcardManager.getDashboardStats();
-  console.log("更新 Dashboard:", stats);
   ui.updateDashboard(stats);
+}
+
+/** 處理測驗模式答題 */
+function handleExamRating(isCorrect) {
+    flashcardManager.handleExamAction(isCorrect);
+    ui.updateScoreboard(flashcardManager.examStats);
 }
 
 /** 載入流程 */
@@ -85,10 +94,10 @@ function renderCategoriesWithEvents() {
 function changeQuestion(step) {
   const hasNext = flashcardManager.changeQuestion(step);
 
-  // 如果在 Review/Quiz Mode 且沒有下一題了 -> 顯示完成
-  if (!hasNext && (flashcardManager.mode === "review" || flashcardManager.mode === "quiz")) {
-    ui.showReviewComplete();
-    // 更新 Dashboard (可能已完成)
+  // 如果在 Review/Quiz/Exam Mode 且沒有下一題了 -> 顯示完成
+  if (!hasNext && (flashcardManager.mode === "review" || flashcardManager.mode === "quiz" || flashcardManager.mode === "exam")) {
+    ui.showReviewComplete(flashcardManager.mode, flashcardManager.examStats);
+    // 更新 Dashboard
     ui.updateDashboard(flashcardManager.getDashboardStats());
     return;
   }
@@ -169,8 +178,10 @@ function manualShuffle() {
    ============================================ */
 
 function setupEventListeners() {
-  // 注入自動評分回調給 UI
+  // 注入回調給 UI
   ui.onAutoRate = handleSrsRating;
+  ui.onExamAction = handleExamRating;
+  ui.onNextQuestion = () => changeQuestion(1);
 
   // 綁定載入按鈕
   const loadBtn = document.querySelector(".btn-sm");

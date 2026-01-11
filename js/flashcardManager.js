@@ -10,7 +10,14 @@ class FlashcardManager {
     this.currentIndex = 0;
     this.currentCategory = "全部";
     this.cachedCategories = [];
-    this.mode = "browse"; // 'browse' | 'review' | 'quiz'
+    this.mode = "browse"; // 'browse' | 'review' | 'quiz' | 'exam'
+    
+    // 測驗模式統計
+    this.examStats = {
+      correct: 0,
+      wrong: 0,
+      total: 0
+    };
   }
 
   /** 初始化題目數據 */
@@ -35,7 +42,21 @@ class FlashcardManager {
     if (mode === "review" || mode === "quiz") {
       this.buildReviewQueue();
       this.questions = this.reviewQueue;
-      // 複習/測驗模式下，通常不隨機洗牌，而是依照急迫性
+    } else if (mode === "exam") {
+      // 測驗模式：使用該分類所有題目
+      this.questions = this.currentCategory === "全部" 
+        ? [...this.allQuestions]
+        : this.allQuestions.filter(q => q.category === this.currentCategory);
+      
+      // 測驗模式強制洗牌
+      shuffleArray(this.questions);
+      
+      // 重置統計
+      this.examStats = {
+        correct: 0,
+        wrong: 0,
+        total: this.questions.length
+      };
     } else {
       // 瀏覽模式：重新套用分類篩選
       this.filterCategory(this.currentCategory, shouldShuffle);
@@ -150,15 +171,23 @@ class FlashcardManager {
     return { due, new: newCount, mastered };
   }
 
+  /** 處理測驗模式紀錄 (不更新 SRS) */
+  handleExamAction(isCorrect) {
+    if (isCorrect) {
+      this.examStats.correct++;
+    } else {
+      this.examStats.wrong++;
+    }
+    // 注意：測驗模式下不移除題目，由 currentIndex 控制進度
+  }
+
   /** 分類與篩選 */
   filterCategory(cat, shouldShuffle = false) {
     this.currentCategory = cat;
 
-    if (this.mode === "review" || this.mode === "quiz") {
-      // 複習/測驗模式下切換分類 -> 重建佇列
-      this.buildReviewQueue();
-      this.questions = this.reviewQueue;
-      this.currentIndex = 0;
+    if (this.mode === "review" || this.mode === "quiz" || this.mode === "exam") {
+      // 複習/測驗模式下切換分類 -> 重建佇列或重新取題
+      this.setMode(this.mode, shouldShuffle);
     } else {
       // 瀏覽模式
       this.questions =
@@ -186,8 +215,8 @@ class FlashcardManager {
   changeQuestion(step) {
     if (this.questions.length === 0) return false;
 
-    // 複習/測驗模式邏輯：單向，且可能會有 "完成" 狀態
-    if (this.mode === "review" || this.mode === "quiz") {
+    // 複習/測驗/考試模式邏輯：單向，且可能會有 "完成" 狀態
+    if (this.mode === "review" || this.mode === "quiz" || this.mode === "exam") {
       // 簡單實作：只允許往後，到底了就 false
       const nextIndex = this.currentIndex + step;
       if (nextIndex >= this.questions.length) {

@@ -100,38 +100,71 @@
         </div>
       </section>
 
-      <!-- 模式切換器 -->
-      <nav id="mode-switcher" class="mode-switcher" role="tablist">
-        <button
-          type="button"
-          class="mode-btn active"
-          data-mode="browse"
-          role="tab"
-          aria-selected="true"
-        >
-          📖 瀏覽模式
-        </button>
-        <button
-          type="button"
-          class="mode-btn"
-          data-mode="review"
-          role="tab"
-          aria-selected="false"
-        >
-          🧠 SRS 模式
-        </button>
-        <button
-          type="button"
-          class="mode-btn"
-          data-mode="quiz"
-          role="tab"
-          aria-selected="false"
-        >
-          ⚡ 快速測驗
-        </button>
-      </nav>
+              <!-- 模式切換器 -->
 
-      <!-- 分類標籤 -->
+              <nav id="mode-switcher" class="mode-switcher" role="tablist">
+
+                  <button type="button" class="mode-btn active" data-mode="browse" role="tab" aria-selected="true">
+
+                      📖 瀏覽模式
+
+                  </button>
+
+                  <button type="button" class="mode-btn" data-mode="review" role="tab" aria-selected="false">
+
+                      🧠 手動 SRS
+
+                  </button>
+
+                  <button type="button" class="mode-btn" data-mode="quiz" role="tab" aria-selected="false">
+
+                      ⚡ 自動 SRS
+
+                  </button>
+
+                  <button type="button" class="mode-btn" data-mode="exam" role="tab" aria-selected="false">
+
+                      📝 快速測驗
+
+                  </button>
+
+              </nav>
+
+      
+
+              <!-- 快速測驗計分板 (Exam Mode) -->
+
+              <section id="exam-scoreboard" class="exam-scoreboard hidden" aria-label="測驗成績">
+
+                  <div class="score-item">
+
+                      <span class="label">✅ 答對</span>
+
+                      <span id="score-correct" class="value">0</span>
+
+                  </div>
+
+                  <div class="score-item">
+
+                      <span class="label">❌ 答錯</span>
+
+                      <span id="score-wrong" class="value">0</span>
+
+                  </div>
+
+                  <div class="score-item">
+
+                      <span class="label">📊 準確率</span>
+
+                      <span id="score-accuracy" class="value">0%</span>
+
+                  </div>
+
+              </section>
+
+      
+
+              <!-- 分類標籤 -->
       <nav
         id="category-tags"
         class="tags-container"
@@ -322,14 +355,13 @@
             <li>將連結貼到上方的輸入框並點擊「載入題庫」。</li>
           </ol>
 
-          <h3>🧠 SRS 間隔重複系統</h3>
-          <p>
-            系統會根據您的評分自動安排複習時間：
-            <br />🔴 <strong>重來</strong>：立即重新學習 <br />🟠
-            <strong>困難</strong>：較短的間隔 <br />🔵
-            <strong>良好</strong>：標準間隔 <br />🟢
-            <strong>簡單</strong>：較長的間隔
-          </p>
+                <h3>🧠 學習模式說明</h3>
+                <ul>
+                    <li><strong>📖 瀏覽模式</strong>：自由練習，不計分、不更新複習時間。</li>
+                    <li><strong>🧠 手動 SRS</strong>：針對到期卡片，翻面後依記憶狀況手動評分。</li>
+                    <li><strong>⚡ 自動 SRS</strong>：針對到期測驗題，依答題狀況自動計算下次複習時間。</li>
+                    <li><strong>📝 快速測驗</strong>：純計分測驗模式，不影響 SRS 進度，結算答對率。</li>
+                </ul>
 
           <h3>⌨️ 鍵盤快捷鍵</h3>
           <ul>

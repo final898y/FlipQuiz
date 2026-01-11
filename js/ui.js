@@ -32,6 +32,12 @@ const elements = {
     container: document.getElementById("mode-switcher"),
     btns: document.querySelectorAll(".mode-btn")
   },
+  scoreboard: {
+    container: document.getElementById("exam-scoreboard"),
+    correct: document.getElementById("score-correct"),
+    wrong: document.getElementById("score-wrong"),
+    accuracy: document.getElementById("score-accuracy")
+  },
   controls: {
     browse: document.getElementById("browse-controls"),
     srs: document.getElementById("srs-controls")
@@ -78,7 +84,7 @@ export const ui = {
     elements.dashboard.mastered.textContent = stats.mastered || 0;
   },
 
-  /** 設定 UI 模式 (browse | review | quiz) */
+  /** 設定 UI 模式 (browse | review | quiz | exam) */
   setMode(mode) {
     // 更新切換器狀態
     elements.modeSwitcher.btns.forEach(btn => {
@@ -87,13 +93,21 @@ export const ui = {
       btn.setAttribute("aria-selected", isActive);
     });
 
+    // 顯示/隱藏記分板 (僅快速測驗模式顯示)
+    if (mode === 'exam') {
+        elements.scoreboard.container.classList.remove("hidden");
+        this.updateScoreboard({ correct: 0, wrong: 0, total: 0 });
+    } else {
+        elements.scoreboard.container.classList.add("hidden");
+    }
+
     // 切換底部控制列
     if (mode === 'review') {
       elements.controls.browse.classList.add("hidden");
       elements.controls.srs.classList.remove("hidden");
-    } else if (mode === 'quiz') {
+    } else if (mode === 'quiz' || mode === 'exam') {
       elements.controls.browse.classList.add("hidden");
-      elements.controls.srs.classList.add("hidden"); // Quiz 模式自動評分，無需手動 SRS 按鈕
+      elements.controls.srs.classList.add("hidden"); 
     } else {
       elements.controls.browse.classList.remove("hidden");
       elements.controls.srs.classList.add("hidden");
@@ -104,12 +118,37 @@ export const ui = {
     elements.card.classList.remove("hidden");
   },
 
+  /** 更新記分板數值 */
+  updateScoreboard(stats) {
+    elements.scoreboard.correct.textContent = stats.correct;
+    elements.scoreboard.wrong.textContent = stats.wrong;
+    
+    const totalAnswered = stats.correct + stats.wrong;
+    const accuracy = totalAnswered === 0 ? 0 : Math.round((stats.correct / totalAnswered) * 100);
+    elements.scoreboard.accuracy.textContent = `${accuracy}%`;
+  },
+
+  /** 外部回調：下一題 (由 main.js 注入) */
+  onNextQuestion: null,
+
   /** 顯示複習完成畫面 */
-  showReviewComplete() {
+  showReviewComplete(mode = 'review', stats = null) {
     elements.card.classList.add("hidden");
     elements.reviewComplete.classList.remove("hidden");
-    elements.controls.srs.classList.add("hidden"); // 隱藏評分按鈕
-    elements.progress.textContent = "今日剩餘: 0 題";
+    elements.controls.srs.classList.add("hidden"); 
+    elements.progress.textContent = "任務完成！";
+    
+    const title = elements.reviewComplete.querySelector("h2");
+    const desc = elements.reviewComplete.querySelector("p");
+    
+    if (mode === 'exam' && stats) {
+        const accuracy = stats.total === 0 ? 0 : Math.round((stats.correct / stats.total) * 100);
+        title.textContent = "測驗結束！";
+        desc.innerHTML = `本次得分：<strong>${stats.correct}</strong> / ${stats.total}<br>準確率：<strong>${accuracy}%</strong>`;
+    } else {
+        title.textContent = "今日複習任務已完成！";
+        desc.textContent = "太棒了！您已經處理完所有到期的卡片。";
+    }
   },
 
   /** 渲染分類標籤 */
@@ -148,9 +187,9 @@ export const ui = {
     // 重置答錯計數
     this.wrongAttempts = 0;
 
-    // 若複習/測驗模式且無卡片，顯示完成畫面
-    if ((mode === 'review' || mode === 'quiz') && !data) {
-        ui.showReviewComplete();
+    // 若複習/測驗/考試模式且無卡片，顯示完成畫面
+    if ((mode === 'review' || mode === 'quiz' || mode === 'exam') && !data) {
+        ui.showReviewComplete(mode);
         return;
     }
 
@@ -208,8 +247,9 @@ export const ui = {
     }
 
     // 更新進度文字
-    if (mode === 'review' || mode === 'quiz') {
-        elements.progress.textContent = `今日剩餘: ${status.remaining} 題`;
+    if (mode === 'review' || mode === 'quiz' || mode === 'exam') {
+        const remaining = mode === 'exam' ? (status.total - status.current + 1) : status.remaining;
+        elements.progress.textContent = `進度: ${status.current} / ${status.total} (剩餘 ${remaining} 題)`;
     } else {
         elements.progress.textContent = `第 ${status.current} / ${status.total} 題 (${status.category})`;
     }
@@ -224,12 +264,18 @@ export const ui = {
         elements.frontHint.textContent = "🤔 思考答案後，點擊翻面";
         elements.controls.srs.classList.add("hidden"); 
     } else if (mode === 'quiz') {
-        elements.frontHint.textContent = "⚡ 快速測驗中 (自動評分)";
+        elements.frontHint.textContent = "⚡ 自動 SRS (測驗中)";
+        elements.controls.srs.classList.add("hidden");
+    } else if (mode === 'exam') {
+        elements.frontHint.textContent = "📝 快速測驗 (不計入 SRS)";
         elements.controls.srs.classList.add("hidden");
     } else {
         elements.frontHint.textContent = "正面：題目 (點擊翻面)";
     }
   },
+
+  /** 外部回調：測驗動作 (由 main.js 注入) */
+  onExamAction: null,
 
   /** 處理選擇題點擊 */
   handleQuizChoice(clickedBtn, choice, correct) {
@@ -255,24 +301,25 @@ export const ui = {
       const currentMode = currentModeBtn ? currentModeBtn.dataset.mode : 'browse';
 
       if (currentMode === 'quiz' && typeof this.onAutoRate === 'function') {
-         // Quiz 模式：自動評分邏輯 (Auto-SRS)
-         let rating = 3; // 預設: Good
-         
-         if (this.wrongAttempts === 0) {
-             rating = 3; // 一次答對 -> Good
-         } else if (this.wrongAttempts === 1) {
-             rating = 2; // 錯一次 -> Hard
-         } else {
-             rating = 1; // 錯兩次以上 -> Again
-         }
+         // 自動 SRS 模式：自動評分邏輯
+         let rating = 3; 
+         if (this.wrongAttempts === 0) rating = 3;
+         else if (this.wrongAttempts === 1) rating = 2;
+         else rating = 1;
 
-         // 延遲後自動送出評分
          setTimeout(() => {
              this.onAutoRate(rating); 
          }, 500);
 
+      } else if (currentMode === 'exam' && typeof this.onExamAction === 'function') {
+         // 快速測驗模式：純計分，自動跳轉
+         this.onExamAction(true);
+         setTimeout(() => {
+            // 自動跳到下一題 (由 main.js 處理)
+            if (this.onNextQuestion) this.onNextQuestion();
+         }, 800);
       } else {
-         // Review 或 Browse 模式：翻面顯示背面 (讓使用者看筆記或手動評分)
+         // Review 或 Browse 模式：翻面顯示背面
          setTimeout(() => ui.flipCard(), 500);
       }
 
@@ -280,21 +327,29 @@ export const ui = {
       // 記錄本次答錯
       this.wrongAttempts++;
 
-      // 視覺震動：加入動畫 Class
+      // 視覺震動
       clickedBtn.classList.add("option-wrong", "shake-animation");
       
-      // 觸覺震動：手機震動 200ms (如果裝置支援)
-      if (navigator.vibrate) {
-        navigator.vibrate(200);
-      }
+      if (navigator.vibrate) navigator.vibrate(200);
 
       clickedBtn.disabled = true;
       clickedBtn.style.pointerEvents = "none";
       
-      clickedBtn.setAttribute(
-        "aria-label",
-        clickedBtn.getAttribute("aria-label") + " - 錯誤"
-      );
+      const currentModeBtn = document.querySelector('.mode-btn.active');
+      const currentMode = currentModeBtn ? currentModeBtn.dataset.mode : 'browse';
+
+      if (currentMode === 'exam' && typeof this.onExamAction === 'function') {
+          // 測驗模式答錯：計分並翻面看答案
+          this.onExamAction(false);
+          setTimeout(() => {
+              ui.flipCard();
+              // 顯示背面 2 秒後自動跳下一題，或者讓使用者手動點？
+              // 這裡採自動跳轉，確保「快速」測驗
+              setTimeout(() => {
+                  if (this.onNextQuestion) this.onNextQuestion();
+              }, 2500);
+          }, 500);
+      }
 
       setTimeout(() => clickedBtn.classList.remove("shake-animation"), 500);
     }
