@@ -2,6 +2,7 @@ import { loadData } from "./dataLoader.js";
 import { flashcardManager } from "./flashcardManager.js";
 import { ui } from "./ui.js";
 import { cache } from "./cache.js";
+import { exportToCSV, getFutureDate } from "./utils.js";
 
 /** 更新 UI */
 function updateUI() {
@@ -249,6 +250,38 @@ function setupEventListeners() {
       e.preventDefault();
       loadUserSheet();
     }
+  });
+
+  // 匯出按鈕
+  if (ui.elements.btnExport) {
+    ui.elements.btnExport.addEventListener("click", () => {
+        if (flashcardManager.allQuestions.length === 0) {
+            ui.showError("沒有資料可以匯出");
+            return;
+        }
+        const todayStr = getFutureDate(0); // 取得今天日期字串
+        exportToCSV(flashcardManager.allQuestions, `flipquiz_backup_${todayStr}.csv`);
+    });
+  }
+
+  // 說明按鈕與 Modal 控制
+  if (ui.elements.btnHelp) {
+      ui.elements.btnHelp.addEventListener("click", () => ui.toggleModal(true));
+  }
+  
+  if (ui.elements.modalClose) {
+      ui.elements.modalClose.addEventListener("click", () => ui.toggleModal(false));
+  }
+
+  if (ui.elements.modalBackdrop) {
+      ui.elements.modalBackdrop.addEventListener("click", () => ui.toggleModal(false));
+  }
+  
+  // Modal 內的 Escape 鍵關閉
+  document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !ui.elements.modal.classList.contains("hidden")) {
+          ui.toggleModal(false);
+      }
   });
 }
 

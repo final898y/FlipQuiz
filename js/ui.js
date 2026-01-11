@@ -13,6 +13,15 @@ const elements = {
   cardFront: document.querySelector(".card-front"),
   cardBack: document.querySelector(".card-back"),
   
+  // Navbar 按鈕
+  btnExport: document.getElementById("btn-export"),
+  btnHelp: document.getElementById("btn-help"),
+  
+  // Modal
+  modal: document.getElementById("help-modal"),
+  modalClose: document.querySelector(".btn-close"),
+  modalBackdrop: document.querySelector(".modal-backdrop"),
+
   // 新增元素
   dashboard: {
     due: document.getElementById("count-due"),
@@ -286,4 +295,15 @@ export const ui = {
   focusInput() {
     if (elements.csvInput) elements.csvInput.focus();
   },
+
+  /** 切換 Modal 顯示狀態 */
+  toggleModal(show) {
+    if (show) {
+        elements.modal.classList.remove("hidden");
+        // 為了動畫，延遲一下加入 visible class (如果 CSS 有做)
+        // 這裡直接移除 hidden 讓 opacity transition 生效
+    } else {
+        elements.modal.classList.add("hidden");
+    }
+  }
 };

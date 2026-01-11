@@ -21,8 +21,19 @@
 <body>
 
     <div class="container">
-        <header>
-            <h1>FlipQuiz 翻測卡</h1>
+        <!-- 導航列 -->
+        <header class="navbar">
+            <div class="navbar-brand">
+                <h1>FlipQuiz 翻測卡</h1>
+            </div>
+            <div class="navbar-actions">
+                <button type="button" id="btn-export" class="btn-icon" title="匯出進度 (CSV)">
+                    📥 匯出
+                </button>
+                <button type="button" id="btn-help" class="btn-icon" title="使用說明">
+                    ❓ 說明
+                </button>
+            </div>
         </header>
 
         <!-- 載入面板 -->
@@ -170,6 +181,45 @@
         <!-- 鍵盤提示 -->
         <div class="keyboard-hint">
             <small>💡 提示：使用 ← → 方向鍵切換題目，空白鍵翻轉卡片</small>
+        </div>
+    </div>
+
+    <!-- 說明 Modal -->
+    <div id="help-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title">使用說明</h2>
+                <button type="button" class="btn-close" aria-label="關閉說明">×</button>
+            </header>
+            <div class="modal-body">
+                <h3>📥 如何匯入題庫？</h3>
+                <ol>
+                    <li>在 Google Sheets 建立題庫 (格式參考下方)。</li>
+                    <li>點擊「檔案」>「共用」>「發布到網路」。</li>
+                    <li>選擇「逗號分隔值 (.csv)」，然後複製連結。</li>
+                    <li>將連結貼到上方的輸入框並點擊「載入題庫」。</li>
+                </ol>
+
+                <h3>🧠 SRS 間隔重複系統</h3>
+                <p>
+                    系統會根據您的評分自動安排複習時間：
+                    <br>🔴 <strong>重來</strong>：立即重新學習
+                    <br>🟠 <strong>困難</strong>：較短的間隔
+                    <br>🔵 <strong>良好</strong>：標準間隔
+                    <br>🟢 <strong>簡單</strong>：較長的間隔
+                </p>
+
+                <h3>⌨️ 鍵盤快捷鍵</h3>
+                <ul>
+                    <li><strong>← / →</strong>：切換題目 (瀏覽模式)</li>
+                    <li><strong>Space</strong>：翻轉卡片</li>
+                    <li><strong>1 / 2 / 3 / 4</strong>：SRS 評分 (複習模式)</li>
+                </ul>
+
+                <hr>
+                <p><small>建議定期點擊右上角的「匯出」按鈕備份您的學習進度。</small></p>
+            </div>
         </div>
     </div>
 
