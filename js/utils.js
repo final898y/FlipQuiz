@@ -283,31 +283,34 @@ export function generateUUID() {
  * @returns {string} 包含 BOM 標頭的 CSV 字串，可用於 Excel 開啟
  */
 const convertToCSVString = (data, headers) => {
-    // \uFEFF 是 Byte Order Mark (BOM)，告訴 Excel 此檔案採 UTF-8 編碼，避免中文亂碼
-    const BOM = '\uFEFF';
-    
-    // 處理每一行資料
-    const rows = data.map(row => 
-        headers.map(header => {
-            // 使用 ?? (虛值合併運算子)：若為 null 或 undefined 則給予空字串
-            let val = row[header] ?? ''; 
-            
-            // 如果欄位內容是陣列（例如 options），用分號合併成一個字串
-            if (Array.isArray(val)) {
-                val = val.join(';');
-            }
-            
-            // CSV 安全處理：
-            // 1. 先轉成字串
-            // 2. 將內容中的單個雙引號 " 替換成兩個雙引號 "" (CSV 跳脫規則)
-            // 3. 兩端用雙引號包起來，這樣即使內容有逗號或換行也不會出錯
-            const cell = String(val).replace(/"/g, '""');
-            return `"${cell}"`;
-        }).join(',') // 每一格欄位用逗號隔開
-    );
+  // \uFEFF 是 Byte Order Mark (BOM)，告訴 Excel 此檔案採 UTF-8 編碼，避免中文亂碼
+  const BOM = "\uFEFF";
 
-    // 將標題列與資料列結合，並用換行符號連接
-    return BOM + [headers.join(','), ...rows].join('\n');
+  // 處理每一行資料
+  const rows = data.map(
+    (row) =>
+      headers
+        .map((header) => {
+          // 使用 ?? (虛值合併運算子)：若為 null 或 undefined 則給予空字串
+          let val = row[header] ?? "";
+
+          // 如果欄位內容是陣列（例如 options），用分號合併成一個字串
+          if (Array.isArray(val)) {
+            val = val.join(";");
+          }
+
+          // CSV 安全處理：
+          // 1. 先轉成字串
+          // 2. 將內容中的單個雙引號 " 替換成兩個雙引號 "" (CSV 跳脫規則)
+          // 3. 兩端用雙引號包起來，這樣即使內容有逗號或換行也不會出錯
+          const cell = String(val).replace(/"/g, '""');
+          return `"${cell}"`;
+        })
+        .join(",") // 每一格欄位用逗號隔開
+  );
+
+  // 將標題列與資料列結合，並用換行符號連接
+  return BOM + [headers.join(","), ...rows].join("\n");
 };
 
 /**
@@ -316,42 +319,51 @@ const convertToCSVString = (data, headers) => {
  * @param {string} [filename='flipquiz_export.csv'] - 預設的檔案名稱 (可選)
  * @throws {Error} 當檔案下載過程發生嚴重錯誤時拋出
  */
-export function exportToCSV(data, filename = 'flipquiz_export.csv') {
-    // 衛句：確保有資料才執行，避免程式崩潰
-    if (!data?.length) {
-        console.warn('匯出失敗：沒有可供匯出的資料');
-        return;
-    }
+export function exportToCSV(data, filename = "flipquiz_export.csv") {
+  // 衛句：確保有資料才執行，避免程式崩潰
+  if (!data?.length) {
+    console.warn("匯出失敗：沒有可供匯出的資料");
+    return;
+  }
 
-    // 明確定義欄位順序，這在業界稱為「白名單 (Whitelist)」機制，確保資料格式穩定
-    const headers = [
-        'category', 'type', 'question', 'answer', 'options', 'note',
-        'srs_level', 'next_review', 'interval', 'easiness', 'attempts'
-    ];
+  // 明確定義欄位順序，這在業界稱為「白名單 (Whitelist)」機制，確保資料格式穩定
+  const headers = [
+    "uid",
+    "category",
+    "type",
+    "question",
+    "answer",
+    "options",
+    "note",
+    "srs_level",
+    "next_review",
+    "interval",
+    "easiness",
+    "attempts",
+  ];
 
-    try {
-        // 1. 取得 CSV 字串
-        const csvString = convertToCSVString(data, headers);
-        
-        // 2. 建立 Blob 物件，指定格式為 CSV 與編碼
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        
-        // 3. 產生指向該 Blob 的暫時性記憶體網址 (URL)
-        const url = URL.createObjectURL(blob);
-        
-        // 4. 建立隱藏的 <a> 標籤並觸發點擊，開始下載
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename; // 指定下載後的檔名
-        document.body.appendChild(link); // 暫時加入 DOM 以確保相容性
-        link.click();
-        
-        // 5. 善後處理：移除標籤並釋放記憶體網址，避免記憶體洩漏 (Memory Leak)
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-        
-    } catch (error) {
-        // 業界實踐：匯出失敗應有錯誤紀錄，方便後續排查
-        console.error('CSV 匯出過程中發生錯誤:', error);
-    }
+  try {
+    // 1. 取得 CSV 字串
+    const csvString = convertToCSVString(data, headers);
+
+    // 2. 建立 Blob 物件，指定格式為 CSV 與編碼
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+
+    // 3. 產生指向該 Blob 的暫時性記憶體網址 (URL)
+    const url = URL.createObjectURL(blob);
+
+    // 4. 建立隱藏的 <a> 標籤並觸發點擊，開始下載
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename; // 指定下載後的檔名
+    document.body.appendChild(link); // 暫時加入 DOM 以確保相容性
+    link.click();
+
+    // 5. 善後處理：移除標籤並釋放記憶體網址，避免記憶體洩漏 (Memory Leak)
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  } catch (error) {
+    // 業界實踐：匯出失敗應有錯誤紀錄，方便後續排查
+    console.error("CSV 匯出過程中發生錯誤:", error);
+  }
 }
