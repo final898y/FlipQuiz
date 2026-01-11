@@ -10,7 +10,7 @@ class FlashcardManager {
     this.currentIndex = 0;
     this.currentCategory = "全部";
     this.cachedCategories = [];
-    this.mode = "browse"; // 'browse' | 'review'
+    this.mode = "browse"; // 'browse' | 'review' | 'quiz'
   }
 
   /** 初始化題目數據 */
@@ -32,11 +32,10 @@ class FlashcardManager {
   setMode(mode, shouldShuffle = false) {
     this.mode = mode;
 
-    if (mode === "review") {
+    if (mode === "review" || mode === "quiz") {
       this.buildReviewQueue();
       this.questions = this.reviewQueue;
-      // 複習模式下，通常不隨機洗牌，而是依照急迫性 (這裡暫時不排序，直接用列表)
-      // 若要隨機：shuffleArray(this.questions);
+      // 複習/測驗模式下，通常不隨機洗牌，而是依照急迫性
     } else {
       // 瀏覽模式：重新套用分類篩選
       this.filterCategory(this.currentCategory, shouldShuffle);
@@ -155,8 +154,8 @@ class FlashcardManager {
   filterCategory(cat, shouldShuffle = false) {
     this.currentCategory = cat;
 
-    if (this.mode === "review") {
-      // 複習模式下切換分類 -> 重建佇列
+    if (this.mode === "review" || this.mode === "quiz") {
+      // 複習/測驗模式下切換分類 -> 重建佇列
       this.buildReviewQueue();
       this.questions = this.reviewQueue;
       this.currentIndex = 0;
@@ -187,8 +186,8 @@ class FlashcardManager {
   changeQuestion(step) {
     if (this.questions.length === 0) return false;
 
-    // 複習模式邏輯：單向，且可能會有 "完成" 狀態
-    if (this.mode === "review") {
+    // 複習/測驗模式邏輯：單向，且可能會有 "完成" 狀態
+    if (this.mode === "review" || this.mode === "quiz") {
       // 簡單實作：只允許往後，到底了就 false
       const nextIndex = this.currentIndex + step;
       if (nextIndex >= this.questions.length) {

@@ -1,228 +1,351 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="翻測卡 - 支援 Google Sheets 的互動式學習卡片系統，支援選擇題、翻卡記憶等多種學習模式">
-    <meta name="keywords" content="學習卡片,flashcard,記憶卡,題庫系統,線上學習">
-    <meta name="author" content="翻測卡">
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="翻測卡 - 支援 Google Sheets 的互動式學習卡片系統，支援選擇題、翻卡記憶等多種學習模式"
+    />
+    <meta
+      name="keywords"
+      content="學習卡片,flashcard,記憶卡,題庫系統,線上學習"
+    />
+    <meta name="author" content="翻測卡" />
+
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="翻測卡 FlipQuiz">
-    <meta property="og:description" content="支援 Google Sheets 的互動式學習卡片系統">
-    
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="翻測卡 FlipQuiz" />
+    <meta
+      property="og:description"
+      content="支援 Google Sheets 的互動式學習卡片系統"
+    />
+
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
-    
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"
+    />
+
     <title>FlipQuiz 翻測卡</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="container">
-        <!-- 導航列 -->
-        <header class="navbar">
-            <div class="navbar-brand">
-                <h1>FlipQuiz 翻測卡</h1>
+      <!-- 導航列 -->
+      <header class="navbar">
+        <div class="navbar-brand">
+          <h1>FlipQuiz 翻測卡</h1>
+        </div>
+        <div class="navbar-actions">
+          <button
+            type="button"
+            id="btn-export"
+            class="btn-icon"
+            title="匯出進度 (CSV)"
+          >
+            📥 匯出
+          </button>
+          <button type="button" id="btn-help" class="btn-icon" title="使用說明">
+            ❓ 說明
+          </button>
+        </div>
+      </header>
+
+      <!-- 載入面板 -->
+      <section class="settings-panel" role="region" aria-label="題庫設定">
+        <label for="csv-url-input" class="visually-hidden"
+          >Google Sheets CSV 網址</label
+        >
+        <input
+          type="url"
+          id="csv-url-input"
+          placeholder="貼上 Google Sheets CSV 網址..."
+          aria-label="CSV 網址輸入框"
+          autocomplete="url"
+          spellcheck="false"
+        />
+        <button type="button" class="btn-sm" aria-label="載入題庫">
+          <span class="btn-text">載入題庫</span>
+          <span class="btn-loading" aria-hidden="true">載入中...</span>
+        </button>
+      </section>
+
+      <!-- 錯誤提示區域 -->
+      <div
+        id="error-message"
+        class="error-message"
+        role="alert"
+        aria-live="polite"
+      ></div>
+
+      <!-- SRS 狀態看板 -->
+      <section
+        id="status-dashboard"
+        class="status-dashboard"
+        aria-label="學習狀態統計"
+      >
+        <div class="status-item due">
+          <span class="status-label">待複習</span>
+          <span id="count-due" class="status-value">0</span>
+        </div>
+        <div class="status-item new">
+          <span class="status-label">未學習</span>
+          <span id="count-new" class="status-value">0</span>
+        </div>
+        <div class="status-item mastered">
+          <span class="status-label">已精通</span>
+          <span id="count-mastered" class="status-value">0</span>
+        </div>
+      </section>
+
+      <!-- 模式切換器 -->
+      <nav id="mode-switcher" class="mode-switcher" role="tablist">
+        <button
+          type="button"
+          class="mode-btn active"
+          data-mode="browse"
+          role="tab"
+          aria-selected="true"
+        >
+          📖 瀏覽模式
+        </button>
+        <button
+          type="button"
+          class="mode-btn"
+          data-mode="review"
+          role="tab"
+          aria-selected="false"
+        >
+          🧠 SRS 模式
+        </button>
+        <button
+          type="button"
+          class="mode-btn"
+          data-mode="quiz"
+          role="tab"
+          aria-selected="false"
+        >
+          ⚡ 快速測驗
+        </button>
+      </nav>
+
+      <!-- 分類標籤 -->
+      <nav
+        id="category-tags"
+        class="tags-container"
+        role="navigation"
+        aria-label="題目分類"
+      ></nav>
+
+      <!-- 進度資訊 -->
+      <div
+        id="progress-info"
+        class="progress-text"
+        role="status"
+        aria-live="polite"
+      >
+        等待載入題庫...
+      </div>
+
+      <!-- 學習卡片 -->
+      <div
+        class="card"
+        id="card"
+        role="region"
+        aria-label="學習卡片"
+        tabindex="0"
+      >
+        <div class="card-inner">
+          <!-- 正面 -->
+          <div class="card-face card-front" aria-hidden="false">
+            <div class="card-content">
+              <p id="question-text" class="question-text">
+                請在上方輸入 CSV 網址並點擊載入。
+              </p>
+              <div
+                id="options-container"
+                class="options-grid"
+                role="group"
+                aria-label="選項列表"
+              ></div>
             </div>
-            <div class="navbar-actions">
-                <button type="button" id="btn-export" class="btn-icon" title="匯出進度 (CSV)">
-                    📥 匯出
-                </button>
-                <button type="button" id="btn-help" class="btn-icon" title="使用說明">
-                    ❓ 說明
-                </button>
+            <small class="card-hint">正面：題目 (點擊翻面)</small>
+          </div>
+
+          <!-- 背面 -->
+          <div class="card-face card-back" aria-hidden="true">
+            <div class="card-content">
+              <p id="answer-text" class="answer-text"></p>
+              <p id="note-text" class="note-style"></p>
             </div>
-        </header>
+            <small class="card-hint">背面：答案與說明 (點擊翻回)</small>
+          </div>
+        </div>
+      </div>
 
-        <!-- 載入面板 -->
-        <section class="settings-panel" role="region" aria-label="題庫設定">
-            <label for="csv-url-input" class="visually-hidden">Google Sheets CSV 網址</label>
-            <input 
-                type="url" 
-                id="csv-url-input" 
-                placeholder="貼上 Google Sheets CSV 網址..."
-                aria-label="CSV 網址輸入框"
-                autocomplete="url"
-                spellcheck="false"
-            >
-            <button 
-                type="button"
-                class="btn-sm"
-                aria-label="載入題庫"
-            >
-                <span class="btn-text">載入題庫</span>
-                <span class="btn-loading" aria-hidden="true">載入中...</span>
-            </button>
-        </section>
+      <!-- 任務完成畫面 (預設隱藏) -->
 
-        <!-- 錯誤提示區域 -->
-        <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+      <div id="review-complete" class="review-complete hidden">
+        <div class="complete-icon">🎉</div>
 
-        <!-- SRS 狀態看板 -->
-        <section id="status-dashboard" class="status-dashboard" aria-label="學習狀態統計">
-            <div class="status-item due">
-                <span class="status-label">待複習</span>
-                <span id="count-due" class="status-value">0</span>
-            </div>
-            <div class="status-item new">
-                <span class="status-label">未學習</span>
-                <span id="count-new" class="status-value">0</span>
-            </div>
-            <div class="status-item mastered">
-                <span class="status-label">已精通</span>
-                <span id="count-mastered" class="status-value">0</span>
-            </div>
-        </section>
+        <h2>今日複習任務已完成！</h2>
 
-        <!-- 模式切換器 -->
-        <nav id="mode-switcher" class="mode-switcher" role="tablist">
-            <button type="button" class="mode-btn active" data-mode="browse" role="tab" aria-selected="true">
-                📖 瀏覽模式
-            </button>
-            <button type="button" class="mode-btn" data-mode="review" role="tab" aria-selected="false">
-                🧠 複習模式
-            </button>
-        </nav>
+        <p>太棒了！您已經處理完所有到期的卡片。</p>
 
-        <!-- 分類標籤 -->
-        <nav id="category-tags" class="tags-container" role="navigation" aria-label="題目分類"></nav>
+        <div class="complete-actions">
+          <button
+            type="button"
+            id="btn-continue-practice"
+            class="btn btn-primary"
+          >
+            🔄 繼續練習 (切換至瀏覽模式)
+          </button>
 
-        <!-- 進度資訊 -->
-        <div id="progress-info" class="progress-text" role="status" aria-live="polite">等待載入題庫...</div>
+          <!-- <button type="button" class="btn btn-secondary" onclick="location.reload()">重新載入</button> -->
+        </div>
+      </div>
 
-        <!-- 學習卡片 -->
-        <div class="card" id="card" role="region" aria-label="學習卡片" tabindex="0">
-            <div class="card-inner">
-                <!-- 正面 -->
-                <div class="card-face card-front" aria-hidden="false">
-                    <div class="card-content">
-                        <p id="question-text" class="question-text">請在上方輸入 CSV 網址並點擊載入。</p>
-                        <div id="options-container" class="options-grid" role="group" aria-label="選項列表"></div>
-                        
-                    </div>
-                    <small class="card-hint">正面：題目 (點擊翻面)</small>
-                </div>
-                
-                <!-- 背面 -->
-                <div class="card-face card-back" aria-hidden="true">
-                    <div class="card-content">
-                        <p id="answer-text" class="answer-text"></p>
-                        <p id="note-text" class="note-style"></p>
-                    </div>
-                    <small class="card-hint">背面：答案與說明 (點擊翻回)</small>
-                </div>
-            </div>
+      <!-- 控制按鈕容器 -->
+      <div class="controls-container">
+        <!-- 瀏覽模式控制 (原本的控制項) -->
+        <div
+          id="browse-controls"
+          class="controls"
+          role="group"
+          aria-label="卡片瀏覽控制"
+        >
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="prev-btn"
+            aria-label="上一題"
+            title="上一題 (方向鍵 ←)"
+          >
+            ← 上一題
+          </button>
+          <button
+            type="button"
+            class="btn btn-shuffle"
+            id="shuffle-btn"
+            aria-label="隨機洗牌"
+            title="隨機洗牌"
+          >
+            🔀 洗牌
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="next-btn"
+            aria-label="下一題"
+            title="下一題 (方向鍵 →)"
+          >
+            下一題 →
+          </button>
         </div>
 
-        <!-- 任務完成畫面 (預設隱藏) -->
-        <div id="review-complete" class="review-complete hidden">
-            <div class="complete-icon">🎉</div>
-            <h2>今日複習任務已完成！</h2>
-            <p>太棒了！您已經處理完所有到期的卡片。</p>
-            <button type="button" class="btn btn-primary" onclick="location.reload()">重新整理</button>
+        <!-- 複習模式 SRS 評分按鈕 (背面顯示) -->
+        <div
+          id="srs-controls"
+          class="controls hidden"
+          role="group"
+          aria-label="SRS 評分控制"
+        >
+          <button
+            type="button"
+            class="btn btn-srs again"
+            data-rating="1"
+            title="完全忘記 (鍵盤 1)"
+          >
+            <span class="btn-label">重來</span>
+            <span class="btn-subtext">Again</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-srs hard"
+            data-rating="2"
+            title="感到困難 (鍵盤 2)"
+          >
+            <span class="btn-label">困難</span>
+            <span class="btn-subtext">Hard</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-srs good"
+            data-rating="3"
+            title="表現良好 (鍵盤 3)"
+          >
+            <span class="btn-label">良好</span>
+            <span class="btn-subtext">Good</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-srs easy"
+            data-rating="4"
+            title="非常簡單 (鍵盤 4)"
+          >
+            <span class="btn-label">簡單</span>
+            <span class="btn-subtext">Easy</span>
+          </button>
         </div>
+      </div>
 
-        <!-- 控制按鈕容器 -->
-        <div class="controls-container">
-            <!-- 瀏覽模式控制 (原本的控制項) -->
-            <div id="browse-controls" class="controls" role="group" aria-label="卡片瀏覽控制">
-                <button 
-                    type="button"
-                    class="btn btn-secondary" 
-                    id="prev-btn"
-                    aria-label="上一題"
-                    title="上一題 (方向鍵 ←)"
-                >
-                    ← 上一題
-                </button>
-                <button 
-                    type="button"
-                    class="btn btn-shuffle" 
-                    id="shuffle-btn"
-                    aria-label="隨機洗牌"
-                    title="隨機洗牌"
-                >
-                    🔀 洗牌
-                </button>
-                <button 
-                    type="button"
-                    class="btn btn-primary" 
-                    id="next-btn"
-                    aria-label="下一題"
-                    title="下一題 (方向鍵 →)"
-                >
-                    下一題 →
-                </button>
-            </div>
-
-            <!-- 複習模式 SRS 評分按鈕 (背面顯示) -->
-            <div id="srs-controls" class="controls hidden" role="group" aria-label="SRS 評分控制">
-                <button type="button" class="btn btn-srs again" data-rating="1" title="完全忘記 (鍵盤 1)">
-                    <span class="btn-label">重來</span>
-                    <span class="btn-subtext">Again</span>
-                </button>
-                <button type="button" class="btn btn-srs hard" data-rating="2" title="感到困難 (鍵盤 2)">
-                    <span class="btn-label">困難</span>
-                    <span class="btn-subtext">Hard</span>
-                </button>
-                <button type="button" class="btn btn-srs good" data-rating="3" title="表現良好 (鍵盤 3)">
-                    <span class="btn-label">良好</span>
-                    <span class="btn-subtext">Good</span>
-                </button>
-                <button type="button" class="btn btn-srs easy" data-rating="4" title="非常簡單 (鍵盤 4)">
-                    <span class="btn-label">簡單</span>
-                    <span class="btn-subtext">Easy</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 鍵盤提示 -->
-        <div class="keyboard-hint">
-            <small>💡 提示：使用 ← → 方向鍵切換題目，空白鍵翻轉卡片</small>
-        </div>
+      <!-- 鍵盤提示 -->
+      <div class="keyboard-hint">
+        <small>💡 提示：使用 ← → 方向鍵切換題目，空白鍵翻轉卡片</small>
+      </div>
     </div>
 
     <!-- 說明 Modal -->
-    <div id="help-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2 id="modal-title">使用說明</h2>
-                <button type="button" class="btn-close" aria-label="關閉說明">×</button>
-            </header>
-            <div class="modal-body">
-                <h3>📥 如何匯入題庫？</h3>
-                <ol>
-                    <li>在 Google Sheets 建立題庫 (格式參考下方)。</li>
-                    <li>點擊「檔案」>「共用」>「發布到網路」。</li>
-                    <li>選擇「逗號分隔值 (.csv)」，然後複製連結。</li>
-                    <li>將連結貼到上方的輸入框並點擊「載入題庫」。</li>
-                </ol>
+    <div
+      id="help-modal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <header class="modal-header">
+          <h2 id="modal-title">使用說明</h2>
+          <button type="button" class="btn-close" aria-label="關閉說明">
+            ×
+          </button>
+        </header>
+        <div class="modal-body">
+          <h3>📥 如何匯入題庫？</h3>
+          <ol>
+            <li>在 Google Sheets 建立題庫 (格式參考下方)。</li>
+            <li>點擊「檔案」>「共用」>「發布到網路」。</li>
+            <li>選擇「逗號分隔值 (.csv)」，然後複製連結。</li>
+            <li>將連結貼到上方的輸入框並點擊「載入題庫」。</li>
+          </ol>
 
-                <h3>🧠 SRS 間隔重複系統</h3>
-                <p>
-                    系統會根據您的評分自動安排複習時間：
-                    <br>🔴 <strong>重來</strong>：立即重新學習
-                    <br>🟠 <strong>困難</strong>：較短的間隔
-                    <br>🔵 <strong>良好</strong>：標準間隔
-                    <br>🟢 <strong>簡單</strong>：較長的間隔
-                </p>
+          <h3>🧠 SRS 間隔重複系統</h3>
+          <p>
+            系統會根據您的評分自動安排複習時間：
+            <br />🔴 <strong>重來</strong>：立即重新學習 <br />🟠
+            <strong>困難</strong>：較短的間隔 <br />🔵
+            <strong>良好</strong>：標準間隔 <br />🟢
+            <strong>簡單</strong>：較長的間隔
+          </p>
 
-                <h3>⌨️ 鍵盤快捷鍵</h3>
-                <ul>
-                    <li><strong>← / →</strong>：切換題目 (瀏覽模式)</li>
-                    <li><strong>Space</strong>：翻轉卡片</li>
-                    <li><strong>1 / 2 / 3 / 4</strong>：SRS 評分 (複習模式)</li>
-                </ul>
+          <h3>⌨️ 鍵盤快捷鍵</h3>
+          <ul>
+            <li><strong>← / →</strong>：切換題目 (瀏覽模式)</li>
+            <li><strong>Space</strong>：翻轉卡片</li>
+            <li><strong>1 / 2 / 3 / 4</strong>：SRS 評分 (SRS模式)</li>
+          </ul>
 
-                <hr>
-                <p><small>建議定期點擊右上角的「匯出」按鈕備份您的學習進度。</small></p>
-            </div>
+          <hr />
+          <p>
+            <small>建議定期點擊右上角的「匯出」按鈕備份您的學習進度。</small>
+          </p>
         </div>
+      </div>
     </div>
 
     <script type="module" src="js/main.js"></script>
-</body>
+  </body>
 </html>

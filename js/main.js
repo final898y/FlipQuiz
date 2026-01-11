@@ -85,8 +85,8 @@ function renderCategoriesWithEvents() {
 function changeQuestion(step) {
   const hasNext = flashcardManager.changeQuestion(step);
 
-  // 如果在 Review Mode 且沒有下一題了 -> 顯示完成
-  if (!hasNext && flashcardManager.mode === "review") {
+  // 如果在 Review/Quiz Mode 且沒有下一題了 -> 顯示完成
+  if (!hasNext && (flashcardManager.mode === "review" || flashcardManager.mode === "quiz")) {
     ui.showReviewComplete();
     // 更新 Dashboard (可能已完成)
     ui.updateDashboard(flashcardManager.getDashboardStats());
@@ -169,6 +169,9 @@ function manualShuffle() {
    ============================================ */
 
 function setupEventListeners() {
+  // 注入自動評分回調給 UI
+  ui.onAutoRate = handleSrsRating;
+
   // 綁定載入按鈕
   const loadBtn = document.querySelector(".btn-sm");
   if (loadBtn) {
@@ -262,6 +265,17 @@ function setupEventListeners() {
         const todayStr = getFutureDate(0); // 取得今天日期字串
         exportToCSV(flashcardManager.allQuestions, `flipquiz_backup_${todayStr}.csv`);
     });
+  }
+
+  // 任務完成後的「繼續練習」按鈕
+  const btnContinue = document.getElementById("btn-continue-practice");
+  if (btnContinue) {
+      btnContinue.addEventListener("click", () => {
+          // 切換回瀏覽模式
+          switchMode("browse");
+          // 自動洗牌，讓題目順序打亂
+          manualShuffle();
+      });
   }
 
   // 說明按鈕與 Modal 控制

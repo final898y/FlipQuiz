@@ -42,6 +42,11 @@ const elements = {
 
 export const ui = {
   elements,
+  
+  /** 狀態追蹤：當前卡片答錯次數 */
+  wrongAttempts: 0,
+  /** 外部回調：自動評分 (由 main.js 注入) */
+  onAutoRate: null,
 
   /** 顯示錯誤訊息 */
   showError(message) {
@@ -73,7 +78,7 @@ export const ui = {
     elements.dashboard.mastered.textContent = stats.mastered || 0;
   },
 
-  /** 設定 UI 模式 (browse | review) */
+  /** 設定 UI 模式 (browse | review | quiz) */
   setMode(mode) {
     // 更新切換器狀態
     elements.modeSwitcher.btns.forEach(btn => {
@@ -86,12 +91,17 @@ export const ui = {
     if (mode === 'review') {
       elements.controls.browse.classList.add("hidden");
       elements.controls.srs.classList.remove("hidden");
+    } else if (mode === 'quiz') {
+      elements.controls.browse.classList.add("hidden");
+      elements.controls.srs.classList.add("hidden"); // Quiz 模式自動評分，無需手動 SRS 按鈕
     } else {
       elements.controls.browse.classList.remove("hidden");
       elements.controls.srs.classList.add("hidden");
-      elements.reviewComplete.classList.add("hidden");
-      elements.card.classList.remove("hidden");
     }
+    
+    // 重置畫面
+    elements.reviewComplete.classList.add("hidden");
+    elements.card.classList.remove("hidden");
   },
 
   /** 顯示複習完成畫面 */
@@ -135,8 +145,11 @@ export const ui = {
 
   /** 渲染卡片內容 */
   renderCard(data, status, mode = 'browse') {
-    // 若複習模式且無卡片，顯示完成畫面
-    if (mode === 'review' && !data) {
+    // 重置答錯計數
+    this.wrongAttempts = 0;
+
+    // 若複習/測驗模式且無卡片，顯示完成畫面
+    if ((mode === 'review' || mode === 'quiz') && !data) {
         ui.showReviewComplete();
         return;
     }
@@ -195,7 +208,7 @@ export const ui = {
     }
 
     // 更新進度文字
-    if (mode === 'review') {
+    if (mode === 'review' || mode === 'quiz') {
         elements.progress.textContent = `今日剩餘: ${status.remaining} 題`;
     } else {
         elements.progress.textContent = `第 ${status.current} / ${status.total} 題 (${status.category})`;
@@ -209,8 +222,10 @@ export const ui = {
     // 根據模式更新提示文字
     if (mode === 'review') {
         elements.frontHint.textContent = "🤔 思考答案後，點擊翻面";
-        // 隱藏 SRS 按鈕直到翻面
         elements.controls.srs.classList.add("hidden"); 
+    } else if (mode === 'quiz') {
+        elements.frontHint.textContent = "⚡ 快速測驗中 (自動評分)";
+        elements.controls.srs.classList.add("hidden");
     } else {
         elements.frontHint.textContent = "正面：題目 (點擊翻面)";
     }
@@ -235,11 +250,39 @@ export const ui = {
         if (b !== clickedBtn) b.style.opacity = "0.5";
       });
 
-      setTimeout(() => ui.flipCard(), 500);
+      // 檢查目前的模式
+      const currentModeBtn = document.querySelector('.mode-btn.active');
+      const currentMode = currentModeBtn ? currentModeBtn.dataset.mode : 'browse';
+
+      if (currentMode === 'quiz' && typeof this.onAutoRate === 'function') {
+         // Quiz 模式：自動評分邏輯 (Auto-SRS)
+         let rating = 3; // 預設: Good
+         
+         if (this.wrongAttempts === 0) {
+             rating = 3; // 一次答對 -> Good
+         } else if (this.wrongAttempts === 1) {
+             rating = 2; // 錯一次 -> Hard
+         } else {
+             rating = 1; // 錯兩次以上 -> Again
+         }
+
+         // 延遲後自動送出評分
+         setTimeout(() => {
+             this.onAutoRate(rating); 
+         }, 500);
+
+      } else {
+         // Review 或 Browse 模式：翻面顯示背面 (讓使用者看筆記或手動評分)
+         setTimeout(() => ui.flipCard(), 500);
+      }
+
     } else {
+      // 記錄本次答錯
+      this.wrongAttempts++;
+
       // 視覺震動：加入動畫 Class
       clickedBtn.classList.add("option-wrong", "shake-animation");
-
+      
       // 觸覺震動：手機震動 200ms (如果裝置支援)
       if (navigator.vibrate) {
         navigator.vibrate(200);
@@ -265,14 +308,15 @@ export const ui = {
     elements.cardBack.setAttribute("aria-hidden", !isFlipped);
 
     // 檢查目前模式 (透過 DOM 狀態判斷)
-    const isReviewMode = document.querySelector('.mode-btn[data-mode="review"]').classList.contains('active');
+    const currentModeBtn = document.querySelector('.mode-btn.active');
+    const currentMode = currentModeBtn ? currentModeBtn.dataset.mode : 'browse';
 
-    if (isReviewMode) {
+    // 只有在 "複習模式 (Review)" 且 "翻到背面" 時才顯示 SRS 按鈕
+    // "快速測驗 (Quiz)" 模式即使翻面（例如答錯後翻面看筆記）也不需要手動評分
+    if (currentMode === 'review') {
         if (isFlipped) {
-            // 翻到背面 -> 顯示 SRS 按鈕
             elements.controls.srs.classList.remove("hidden");
         } else {
-            // 翻回正面 -> 隱藏 SRS 按鈕
             elements.controls.srs.classList.add("hidden");
         }
     }
