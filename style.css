@@ -1,1046 +1,805 @@
 /* ============================================
-   色彩與主題變數
+   FlipQuiz Modern Theme - Style.css
+   Style: Modern SaaS / Soft UI
+   Version: 3.0 (Clean Rewrite)
    ============================================ */
+
+/* -------------------------------------------------------------------------- */
+/* 1. Design Tokens (設計變數)                                                */
+/* -------------------------------------------------------------------------- */
 :root {
-    /* 主色調 */
-    --primary-color: #2c5282;
-    --primary-hover: #2a4365;
-    --primary-active: #1a365d;
-    
-    /* 背景色 */
-    --bg-color: #f7fafc;
-    --bg-secondary: #edf2f7;
-    --card-bg: #ffffff;
-    --input-bg: #ffffff;
-    
-    /* 文字顏色 */
-    --text-main: #2d3748;
-    --text-muted: #718096;
-    --text-inverse: #ffffff;
-    
-    /* 功能色 */
-    --success: #38a169;
-    --success-hover: #2f855a;
-    --error: #e53e3e;
-    --error-hover: #c53030;
-    --accent: #63b3ed;
-    --accent-hover: #4299e1;
-    
-    /* 邊框與分隔線 */
-    --border-color: #e2e8f0;
-    --divider-color: rgba(0, 0, 0, 0.1);
-    
-    /* 陰影 */
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-    --shadow-md: 0 4px 15px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
-    
-    /* 圓角 */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    
-    /* 動畫時間 */
-    --transition-fast: 0.15s;
-    --transition-base: 0.3s;
-    --transition-slow: 0.6s;
+  /* Brand Palette - Indigo */
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-400: #818cf8;
+
+  /* Functional Colors */
+  --color-success: #10b981; /* Emerald */
+  --color-warning: #f59e0b; /* Amber */
+  --color-error: #ef4444;   /* Red */
+
+  /* Light Theme (Default) */
+  --bg-app: #f1f5f9;       /* Softer Slate Gray for eye-care */
+  --bg-surface: #ffffff;   /* Card/Modal background */
+  --bg-input: #f8fafc;     /* Input background */
+  --bg-hover: #f1f5f9;     /* Hover state */
+  
+  --text-primary: #1e293b;   /* Slate 800 - Softer than pure black */
+  --text-secondary: #475569; /* Slate 600 */
+  --text-tertiary: #94a3b8;  /* Slate 400 */
+  --text-inverse: #ffffff;   /* Text on brand/dark backgrounds */
+
+  --border-color: #e5e7eb;
+  --divider: #f3f4f6;
+
+  /* Special Components */
+  --bg-scoreboard: #1f2937; /* Always dark for contrast */
+  --text-scoreboard: #ffffff;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* 深色模式 - 完整重新配色 */
+/* Dark Theme Overrides */
 @media (prefers-color-scheme: dark) {
-    :root {
-        /* 主色調 - 使用更亮的藍色 */
-        --primary-color: #4299e1;
-        --primary-hover: #63b3ed;
-        --primary-active: #90cdf4;
-        
-        /* 背景色 - 深色系 */
-        --bg-color: #1a202c;
-        --bg-secondary: #2d3748;
-        --card-bg: #2d3748;
-        --input-bg: #2d3748;
-        
-        /* 文字顏色 - 淺色系 */
-        --text-main: #e2e8f0;
-        --text-muted: #cbd5e0;
-        --text-inverse: #1a202c;
-        
-        /* 功能色 - 調整亮度 */
-        --success: #48bb78;
-        --success-hover: #68d391;
-        --error: #fc8181;
-        --error-hover: #f56565;
-        --accent: #63b3ed;
-        --accent-hover: #90cdf4;
-        
-        /* 邊框與分隔線 */
-        --border-color: #4a5568;
-        --divider-color: rgba(255, 255, 255, 0.1);
-        
-        /* 陰影 - 加深 */
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-        --shadow-md: 0 4px 15px rgba(0,0,0,0.4);
-        --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
-    }
+  :root {
+    --bg-app: #0f172a;       /* Slate 900 */
+    --bg-surface: #1e293b;   /* Slate 800 */
+    --bg-input: #020617;     /* Slate 950 */
+    --bg-hover: #334155;     /* Slate 700 */
+
+    --text-primary: #f8fafc;   /* Slate 50 */
+    --text-secondary: #cbd5e1; /* Slate 300 */
+    --text-tertiary: #94a3b8;  /* Slate 400 */
+    --text-inverse: #0f172a;   /* Dark text on light elements if any */
+
+    --border-color: #334155;   /* Slate 700 */
+    --divider: #334155;
+    
+    /* Scoreboard stays dark in dark mode too, or matches surface */
+    --bg-scoreboard: #020617; 
+    --text-scoreboard: #f8fafc;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  }
 }
 
-/* ============================================
-   基礎樣式重置
-   ============================================ */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-size: 16px;
-    scroll-behavior: smooth;
+/* -------------------------------------------------------------------------- */
+/* 2. Global Reset                                                            */
+/* -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: 'PingFang TC', 'Microsoft JhengHei', 'Segoe UI', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    min-height: 100vh;
-    line-height: 1.6;
-    transition: background-color var(--transition-base), color var(--transition-base);
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
 }
 
-/* 無障礙：隱藏但保留給螢幕閱讀器 */
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+button, input {
+  font-family: inherit;
+  font-size: 1rem;
 }
 
-/* ============================================
-   容器與佈局
-   ============================================ */
+/* -------------------------------------------------------------------------- */
+/* 3. Layout Components                                                       */
+/* -------------------------------------------------------------------------- */
 .container {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
+  width: 100%;
+  max-width: 640px; /* Increased from 500px for better desktop feel */
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-/* Navbar 樣式 */
+/* Navbar */
 .navbar {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .navbar-brand h1 {
-    color: var(--primary-color);
-    font-size: clamp(1.25rem, 4vw, 1.5rem);
-    font-weight: 700;
-    margin: 0;
-    transition: color var(--transition-base);
-}
-
-.navbar-actions {
-    display: flex;
-    gap: 8px;
+  font-size: 1.75rem; /* Increased size */
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Fallback for non-webkit */
+  color: var(--color-brand-500);
 }
 
 .btn-icon {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all var(--transition-fast);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-icon:hover {
-    background: var(--bg-secondary);
-    color: var(--primary-color);
+  background-color: var(--bg-hover);
+  color: var(--color-brand-500);
 }
 
-/* ============================================
-   設定面板
-   ============================================ */
+/* Settings Panel */
 .settings-panel {
-    display: flex;
-    gap: 8px;
-    width: 100%;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center; /* Fix vertical alignment */
 }
 
 .settings-panel input {
-    flex: 1;
-    padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    border: 2px solid var(--border-color);
-    background: var(--input-bg);
-    color: var(--text-main);
-    font-size: 0.9rem;
-    transition: all var(--transition-fast);
-}
-
-.settings-panel input::placeholder {
-    color: var(--text-muted);
-    opacity: 0.7;
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  transition: all 0.2s;
 }
 
 .settings-panel input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+  outline: none;
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
-.settings-panel input:hover {
-    border-color: var(--primary-color);
-}
-
-/* 載入按鈕 */
-.btn-sm {
-    padding: 12px 20px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all var(--transition-fast);
-    white-space: nowrap;
-    position: relative;
-}
-
-.btn-sm:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-sm:active {
-    background: var(--primary-active);
-    transform: translateY(0);
-}
-
-.btn-sm:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-}
-
-/* 載入狀態 */
-.btn-sm .btn-loading {
-    display: none;
-}
-
-.btn-sm.loading .btn-text {
-    display: none;
-}
-
-.btn-sm.loading .btn-loading {
-    display: inline;
-}
-
-.btn-sm.loading {
-    pointer-events: none;
-    opacity: 0.7;
-}
-
-/* ============================================
-   錯誤訊息
-   ============================================ */
-.hidden {
-    display: none !important;
-}
-
-.error-message {
-    width: 100%;
-    padding: 12px 16px;
-    background: rgba(229, 62, 62, 0.1);
-    border-left: 4px solid var(--error);
-    border-radius: var(--radius-sm);
-    color: var(--error);
-    font-size: 0.9rem;
-    display: none;
-    animation: slideDown 0.3s ease-out;
-}
-
-/* 深色模式下的錯誤訊息 */
-@media (prefers-color-scheme: dark) {
-    .error-message {
-        background: rgba(252, 129, 129, 0.2);
-        border-color: var(--error);
-        color: #fc8181;
-    }
-}
-
-.error-message.show {
-    display: block;
-    animation: slideDown var(--transition-base) ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ============================================
-   SRS 狀態看板
-   ============================================ */
+/* -------------------------------------------------------------------------- */
+/* 4. Dashboard & Scoreboard                                                  */
+/* -------------------------------------------------------------------------- */
 .status-dashboard {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
 }
 
 .status-item {
-    background: var(--card-bg);
-    padding: 12px 8px;
-    border-radius: var(--radius-md);
-    text-align: center;
-    box-shadow: var(--shadow-sm);
-    border-bottom: 4px solid var(--border-color);
-    transition: transform var(--transition-fast);
-}
-
-.status-item:hover {
-    transform: translateY(-2px);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .status-label {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    margin-bottom: 4px;
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .status-value {
-    display: block;
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--text-main);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
-/* 狀態顏色區分 */
-.status-item.due { border-color: var(--error); }
-.status-item.new { border-color: var(--accent); }
-.status-item.mastered { border-color: var(--success); }
+.status-item.due .status-value { color: var(--color-error); }
+.status-item.new .status-value { color: var(--color-brand-500); } /* Changed from blue to brand */
+.status-item.mastered .status-value { color: var(--color-success); }
 
-/* ============================================
-   模式切換器
-   ============================================ */
+/* Scoreboard (The Fix) */
+.exam-scoreboard {
+  display: flex;
+  justify-content: space-around;
+  background-color: var(--bg-scoreboard);
+  color: var(--text-scoreboard);
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 0.5rem;
+  /* Ensure text color is explicit */
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-item .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+  color: inherit; /* Takes from --text-scoreboard */
+}
+
+.score-item .value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: inherit; /* Takes from --text-scoreboard */
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5. Mode Switcher (Pills)                                                   */
+/* -------------------------------------------------------------------------- */
 .mode-switcher {
-    display: flex;
-    background: var(--bg-secondary);
-    padding: 4px;
-    border-radius: 30px;
-    width: 100%;
-    gap: 4px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 0.3rem;
+  border-radius: var(--radius-pill);
+  display: flex;
+  gap: 0.25rem;
+  width: 100%;
 }
 
 .mode-btn {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all var(--transition-base);
-    white-space: nowrap;
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mode-btn:hover {
+  color: var(--text-primary);
 }
 
 .mode-btn.active {
-    background: var(--card-bg);
-    color: var(--primary-color);
-    box-shadow: var(--shadow-sm);
+  background-color: var(--text-primary);
+  color: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
 }
 
-.mode-btn:hover:not(.active) {
-    color: var(--text-main);
+/* Dark mode adjustment for active pill text */
+@media (prefers-color-scheme: dark) {
+  .mode-btn.active {
+    background-color: var(--color-brand-500);
+    color: white;
+  }
 }
 
-/* ============================================
-   分類標籤
-   ============================================ */
+/* -------------------------------------------------------------------------- */
+/* 6. Tags                                                                    */
+/* -------------------------------------------------------------------------- */
 .tags-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
 .tag {
-    padding: 6px 14px;
-    background: var(--bg-secondary);
-    border-radius: 20px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    border: 2px solid transparent;
-    user-select: none;
-    color: var(--text-main);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .tag:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: translateY(-1px);
-}
-
-.tag:active {
-    transform: translateY(0);
+  border-color: var(--text-tertiary);
+  color: var(--text-primary);
 }
 
 .tag.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
+  background-color: var(--color-brand-500);
+  color: white;
+  border-color: var(--color-brand-500);
 }
 
-.tag:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-}
-
-/* ============================================
-   進度資訊
-   ============================================ */
 .progress-text {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    font-weight: 500;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
 }
 
-/* ============================================
-   卡片核心樣式
-   ============================================ */
+/* -------------------------------------------------------------------------- */
+/* 7. Flashcard (3D)                                                          */
+/* -------------------------------------------------------------------------- */
 .card {
-    width: 100%;
-    min-height: 380px;
-    perspective: 1000px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.card:focus-visible {
-    outline: 3px solid var(--primary-color);
-    outline-offset: 4px;
-    border-radius: var(--radius-md);
+  width: 100%;
+  min-height: 400px;
+  perspective: 1500px;
+  cursor: pointer;
+  position: relative;
 }
 
 .card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 380px;
-    transition: transform var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    will-change: transform;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .card.is-flipped .card-inner {
-    transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 .card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    min-height: 380px;
-    backface-visibility: hidden;
-    border-radius: var(--radius-md);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
 }
 
-/* 正面：根據主題自動調整 */
-.card-front {
-    background: var(--card-bg);
-    color: var(--text-main);
-}
-
-/* 背面：永遠是深色漸層 */
+/* Back Face */
 .card-back {
-    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
-    color: #ffffff;
-    transform: rotateY(180deg);
+  background: linear-gradient(135deg, var(--color-brand-600), var(--color-brand-500));
+  color: white;
+  transform: rotateY(180deg);
+  border: none;
 }
 
-/* 深色模式下的背面卡片 - 使用更亮的漸層 */
-@media (prefers-color-scheme: dark) {
-    .card-back {
-        background: linear-gradient(135deg, #4299e1 0%, #2c5282 100%);
-    }
-}
-
-/* 卡片內容區域 */
 .card-content {
-    flex: 1;
-    padding: 30px 25px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  gap: 1.5rem;
 }
 
-/* 題目文字 */
 .question-text {
-    font-size: 1.25rem;
-    font-weight: 700;
-    text-align: center;
-    line-height: 1.6;
-    color: var(--text-main);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-/* 答案文字 */
 .answer-text {
-    font-size: 1.15rem;
-    font-weight: 600;
-    width: 100%;
-    text-align: center;
-    line-height: 1.6;
-    color: inherit;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white; /* Always white on back */
 }
 
-/* 補充說明 */
 .note-style {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    font-size: 0.95rem;
-    opacity: 0.95;
-    white-space: pre-wrap;
-    width: 100%;
-    line-height: 1.6;
-    color: inherit;
+  font-size: 1rem;
+  opacity: 0.9;
+  white-space: pre-wrap;
+  text-align: left;
+  width: 100%;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  padding-top: 1rem;
+  color: white;
 }
 
-/* 卡片提示 */
 .card-hint {
-    padding: 15px 25px;
-    font-size: 0.8rem;
-    opacity: 0.7;
-    text-align: center;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  background-color: var(--bg-hover);
+  border-top: 1px solid var(--border-color);
 }
 
-/* 正面提示 */
-.card-front .card-hint {
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--divider-color);
-    color: var(--text-muted);
-}
-
-/* 背面提示 */
 .card-back .card-hint {
-    background: rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(0,0,0,0.1);
+  color: rgba(255,255,255,0.7);
+  border: none;
 }
 
-/* ============================================
-   選項按鈕
-   ============================================ */
+/* -------------------------------------------------------------------------- */
+/* 8. Options & Buttons                                                       */
+/* -------------------------------------------------------------------------- */
 .options-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .option-btn {
-    padding: 14px 18px;
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    background: var(--card-bg);
-    cursor: pointer;
-    text-align: left;
-    font-size: 0.95rem;
-    transition: all var(--transition-fast);
-    font-weight: 500;
-    color: var(--text-main);
+  width: 100%;
+  text-align: left;
+  padding: 1rem 1.25rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .option-btn:hover {
-    background: var(--bg-secondary);
-    border-color: var(--primary-color);
-    transform: translateX(4px);
-}
-
-.option-btn:active {
-    transform: translateX(2px);
-}
-
-.option-btn:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
+  border-color: var(--color-brand-500);
+  color: var(--color-brand-500);
+  background-color: var(--bg-hover);
+  transform: translateX(4px);
 }
 
 .option-correct {
-    background: var(--success) !important;
-    color: white !important;
-    border-color: var(--success) !important;
-    transform: scale(1.02);
+  background-color: var(--color-success) !important;
+  color: white !important;
+  border-color: var(--color-success) !important;
 }
 
 .option-wrong {
-    background: var(--error) !important;
-    color: white !important;
-    border-color: var(--error) !important;
+  background-color: var(--color-error) !important;
+  color: white !important;
+  border-color: var(--color-error) !important;
 }
 
-/* ============================================
-   底部控制按鈕
-   ============================================ */
-.controls-container {
-    width: 100%;
+/* Controls */
+.controls-container { width: 100%; }
+.controls { display: flex; gap: 0.75rem; }
+
+.btn, .btn-sm {
+  flex: 1;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit; /* Ensure font matches */
+  font-size: 1rem;
 }
 
-.controls {
-    display: flex;
-    gap: 10px;
-    width: 100%;
+.btn-sm {
+    flex: initial; /* Don't expand like flex items */
+    padding: 0.75rem 1.5rem; /* Slightly smaller/compact */
 }
 
-/* SRS 評分按鈕特有樣式 */
-.btn-srs {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 4px;
-    border: 2px solid transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    background: var(--card-bg);
+.btn:active, .btn-sm:active { transform: scale(0.98); }
+
+.btn-primary, .btn-sm {
+  background-color: var(--color-brand-500);
+  color: white;
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
 }
-
-.btn-srs .btn-label {
-    font-size: 0.95rem;
-    font-weight: 700;
-}
-
-.btn-srs .btn-subtext {
-    font-size: 0.7rem;
-    opacity: 0.7;
-    font-weight: 400;
-    margin-top: 2px;
-}
-
-/* SRS 按鈕顏色 */
-.btn-srs.again { color: var(--error); border-color: rgba(229, 62, 62, 0.2); }
-.btn-srs.again:hover { background: var(--error); color: white; border-color: var(--error); }
-
-.btn-srs.hard { color: #dd6b20; border-color: rgba(221, 107, 32, 0.2); }
-.btn-srs.hard:hover { background: #dd6b20; color: white; border-color: #dd6b20; }
-
-.btn-srs.good { color: var(--primary-color); border-color: rgba(44, 82, 130, 0.2); }
-.btn-srs.good:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-.btn-srs.easy { color: var(--success); border-color: rgba(56, 161, 105, 0.2); }
-.btn-srs.easy:hover { background: var(--success); color: white; border-color: var(--success); }
-
-/* 複習完成畫面 */
-.review-complete {
-    text-align: center;
-    padding: 40px 20px;
-    background: var(--card-bg);
-    border-radius: var(--radius-lg);
-    width: 100%;
-    box-shadow: var(--shadow-md);
-    animation: fadeIn 0.5s ease-out;
-}
-
-.complete-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-}
-
-.review-complete h2 {
-    color: var(--success);
-    margin-bottom: 12px;
-}
-
-.review-complete p {
-    color: var(--text-muted);
-    margin-bottom: 24px;
-}
-
-/* ============================================
-   按鈕基礎樣式
-   ============================================ */
-.btn {
-    flex: 1;
-    padding: 14px 20px;
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: white;
-    transition: all var(--transition-fast);
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-}
-
-.btn-primary {
-    background: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background: var(--primary-hover);
-}
-
-.btn-primary:active {
-    background: var(--primary-active);
+.btn-primary:hover, .btn-sm:hover {
+  background-color: var(--color-brand-600);
 }
 
 .btn-secondary {
-    background: #a0aec0;
-    color: white;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
-
 .btn-secondary:hover {
-    background: #718096;
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
 }
 
 .btn-shuffle {
-    background: var(--accent);
+  background-color: var(--color-warning);
+  color: white;
+}
+.btn-shuffle:hover { background-color: #d97706; }
+
+/* SRS Buttons */
+.btn-srs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-srs:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.btn-srs .btn-label { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+.btn-srs .btn-subtext { font-size: 0.7rem; text-transform: uppercase; opacity: 0.6; }
+
+/* SRS Button Colors */
+.btn-srs.again { color: var(--color-error); }
+.btn-srs.again:hover { background-color: var(--color-error); color: white; }
+
+.btn-srs.hard { color: #f97316; }
+.btn-srs.hard:hover { background-color: #f97316; color: white; }
+
+.btn-srs.good { color: var(--color-brand-500); }
+.btn-srs.good:hover { background-color: var(--color-brand-500); color: white; }
+
+.btn-srs.easy { color: var(--color-success); }
+.btn-srs.easy:hover { background-color: var(--color-success); color: white; }
+
+/* Review Complete */
+.review-complete {
+  text-align: center;
+  padding: 3rem 2rem;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
-.btn-shuffle:hover {
-    background: var(--accent-hover);
+.complete-icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
+.complete-actions { display: flex; gap: 10px; justify-content: center; margin-top: 1.5rem; }
+
+/* -------------------------------------------------------------------------- */
+/* 9. Modal & Utilities                                                       */
+/* -------------------------------------------------------------------------- */
+.hidden { display: none !important; }
+
+.error-message {
+  padding: 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--color-error);
+  border-radius: var(--radius-md);
+  text-align: center;
+  display: none; /* Fix: Default hidden */
+  animation: fadeIn 0.3s;
 }
 
-/* ============================================
-   Modal 樣式
-   ============================================ */
+.error-message.show {
+  display: block;
+}
+
+.keyboard-hint {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  margin-top: 1rem;
+}
+
+/* Loading State Helpers */
+.btn-loading { display: none; }
+.btn-sm.loading { opacity: 0.8; pointer-events: none; }
+.btn-sm.loading .btn-loading { display: inline-block; }
+.btn-sm.loading .btn-text { display: none; }
+
+/* Modal - Fixed Layout */
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--transition-base);
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 .modal:not(.hidden) {
-    opacity: 1;
-    pointer-events: auto;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: -1;
 }
 
 .modal-content {
-    position: relative;
-    background: var(--card-bg);
-    width: 90%;
-    max-width: 500px;
-    max-height: 85vh;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transform: translateY(20px);
-    transition: transform var(--transition-base);
+  background-color: var(--bg-surface);
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+  transform: scale(0.95);
+  transition: transform 0.2s ease;
 }
 
 .modal:not(.hidden) .modal-content {
-    transform: translateY(0);
+  transform: scale(1);
 }
 
 .modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin: 0;
-}
-
-.btn-close {
-    background: transparent;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 0 5px;
-    line-height: 1;
-}
-
-.btn-close:hover {
-    color: var(--error);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .modal-body {
-    padding: 20px;
-    overflow-y: auto;
-    font-size: 0.95rem;
-    color: var(--text-main);
+  padding: 1.5rem;
+  overflow-y: auto;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 .modal-body h3 {
-    font-size: 1.1rem;
-    color: var(--primary-color);
-    margin: 1.5em 0 0.5em;
-    font-weight: 700;
+  color: var(--color-brand-500);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
-.modal-body h3:first-child {
-    margin-top: 0;
-}
+.modal-body h3:first-child { margin-top: 0; }
+.modal-body ul, .modal-body ol { padding-left: 1.25rem; }
+.modal-body li { margin-bottom: 0.5rem; }
 
-.modal-body ol, .modal-body ul {
-    padding-left: 20px;
-    margin-bottom: 1em;
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--text-tertiary);
+  cursor: pointer;
 }
+.btn-close:hover { color: var(--color-error); }
 
-.modal-body li {
-    margin-bottom: 0.5em;
-}
-
-.modal-body hr {
-    border: 0;
-    border-top: 1px solid var(--border-color);
-    margin: 20px 0;
-}
-
-/* ============================================
-   鍵盤提示
-   ============================================ */
-.keyboard-hint {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-/* ============================================
-   動畫效果
-   ============================================ */
+/* Animation Utils */
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 90% { transform: translateX(-4px); }
-    20%, 80% { transform: translateX(4px); }
-    30%, 50%, 70% { transform: translateX(-8px); }
-    40%, 60% { transform: translateX(8px); }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.98); }
-    100% { transform: scale(1); }
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 .shake-animation {
-    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-    transition: none !important; /* 強制關閉 transition 以避免干擾 */
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-/* 淡入動畫 */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.card {
-    animation: fadeIn 0.5s ease-out;
+/* -------------------------------------------------------------------------- */
+/* 10. RWD & Responsive Design (響應式設計)                                    */
+/* -------------------------------------------------------------------------- */
+
+/* 
+   Scenario 2: Laptop (14" @ 200%) & Tablets 
+   Target: Logic resolution ~1280x800. Focus on vertical space saving.
+   Trigger: Width < 1024px OR Height < 900px (Vertical constraint)
+*/
+@media (max-width: 1024px), (max-height: 900px) {
+  body {
+    padding: 1rem 0.5rem; /* Less vertical padding */
+  }
+
+  .container {
+    gap: 0.75rem; /* Tighter layout */
+    max-width: 600px;
+  }
+
+  .navbar-brand h1 { font-size: 1.25rem; }
+
+  /* Compact Dashboard */
+  .status-dashboard { gap: 0.5rem; }
+  .status-item { padding: 0.5rem; } /* Further reduced height */
+  .status-value { font-size: 1.25rem; }
+  .status-label { margin-bottom: 0.2rem; }
+
+  /* Compact Card (Vertical Save) */
+  .card, .card-inner {
+    min-height: 300px; /* Reduced from 320px */
+  }
+  
+  .card-content {
+    padding: 1.5rem;
+    gap: 1rem; /* Less gap between elements */
+  }
+
+  .question-text { font-size: 1.15rem; } /* Smaller font as requested */
+  .answer-text { font-size: 1.1rem; }
+  
+  /* Compact Inputs & Options */
+  .settings-panel input, 
+  .btn, .btn-sm {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .option-btn {
+    padding: 0.5rem 1rem; /* Compact options */
+    font-size: 0.9rem; /* Smaller option text */
+  }
+
+  .exam-scoreboard {
+    padding: 0.5rem; /* Compact scoreboard */
+    margin-bottom: 0.25rem;
+  }
 }
 
-/* ============================================
-   響應式設計
-   ============================================ */
+/* 
+   Scenario 3: Mobile Devices 
+   Target: Width < 480px. Focus on horizontal space and readability.
+*/
 @media (max-width: 480px) {
-    .container {
-        padding: 0;
-    }
-    
-    .navbar {
-        padding: 0 5px;
-    }
-    
-    h1 {
-        font-size: 1.25rem;
-    }
-    
-    .card-inner {
-        min-height: 340px;
-    }
-    
-    .card-face {
-        min-height: 340px;
-    }
-    
-    .card-content {
-        padding: 20px 20px;
-    }
-    
-    .question-text {
-        font-size: 1.1rem;
-    }
-    
-    .answer-text {
-        font-size: 1rem;
-    }
-    
-    .controls {
-        flex-direction: column;
-    }
-    
-    .btn {
-        width: 100%;
-    }
-}
+  body {
+    padding: 0.75rem 0.5rem;
+  }
 
-/* 平板尺寸 */
-@media (min-width: 481px) and (max-width: 768px) {
-    .container {
-        max-width: 600px;
-    }
-}
+  .container {
+    gap: 0.85rem;
+  }
 
-/* 橫向模式 */
-@media (orientation: landscape) and (max-height: 600px) {
-    .card-inner,
-    .card-face {
-        min-height: 300px;
-    }
-}
+  .navbar-brand h1 { font-size: 1.2rem; }
 
-/* ============================================
-   打印樣式
-   ============================================ */
-@media print {
-    body {
-        background: white;
-    }
-    
-    .settings-panel,
-    .controls,
-    .keyboard-hint,
-    .card-hint,
-    .navbar-actions,
-    .mode-switcher {
-        display: none;
-    }
-    
-    .card-inner {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-}
+  /* Dashboard: Tighter Grid */
+  .status-label { font-size: 0.65rem; }
+  .status-value { font-size: 1.1rem; }
+  
+  /* Mode Switcher: Smaller Text */
+  .mode-btn { 
+    font-size: 0.75rem; 
+    padding: 0.4rem; 
+  }
 
-/* ============================================
-   高對比度模式
-   ============================================ */
-@media (prefers-contrast: high) {
-    .btn,
-    .option-btn,
-    .tag {
-        border: 2px solid currentColor;
-    }
-    
-    .settings-panel input {
-        border-width: 3px;
-    }
-    
-    .card-front {
-        border: 2px solid var(--border-color);
-    }
-}
+  /* Scoreboard Mobile */
+  .exam-scoreboard { padding: 0.5rem; }
+  .score-item .value { font-size: 1rem; }
 
-/* ============================================
-   減少動畫（無障礙）
-   ============================================ */
-@media (prefers-reduced-motion: reduce) {
-    /* 全域禁用動畫，但保留必要的狀態轉換 */
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
-    
-    .card-inner {
-        transition: none;
-    }
-    
-    /* 例外：提供溫和的視覺回饋給 Reduced Motion 用戶 */
-    .shake-animation {
-        animation: pulse 0.3s ease-out !important; /* 使用 Pulse 代替 Shake */
-        animation-duration: 0.3s !important; /* 強制覆蓋全域的 0.01ms */
-    }
+  /* Card Mobile */
+  .card, .card-inner {
+    min-height: 280px; /* Even smaller for mobile */
+  }
+  
+  .card-content {
+    padding: 1.25rem;
+  }
+
+  .question-text { font-size: 1.15rem; }
+  .answer-text { font-size: 1.1rem; }
+  .note-style { font-size: 0.9rem; }
+
+  /* Controls: Wrap if needed, or shrink */
+  .controls { gap: 0.5rem; }
+  
+  .btn, .btn-sm, .btn-srs {
+    padding: 0.75rem 0.5rem; /* Taller touch target, narrower width */
+    font-size: 0.9rem;
+  }
+  
+  /* SRS Buttons: Stack label and icon tightly */
+  .btn-srs .btn-label { font-size: 0.8rem; }
+  .btn-srs .btn-subtext { font-size: 0.6rem; }
+  
+  /* Modal Mobile */
+  .modal-content {
+    width: 95%;
+    max-height: 80vh;
+  }
 }
