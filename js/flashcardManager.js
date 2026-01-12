@@ -44,10 +44,13 @@ class FlashcardManager {
       this.questions = this.reviewQueue;
     } else if (mode === "exam") {
       // 測驗模式：使用該分類所有題目
-      this.questions = this.currentCategory === "全部" 
+      let candidates = this.currentCategory === "全部" 
         ? [...this.allQuestions]
         : this.allQuestions.filter(q => q.category === this.currentCategory);
       
+      // 僅限選擇題 (Quiz Type)
+      this.questions = candidates.filter(q => q.type === 'quiz');
+
       // 測驗模式強制洗牌
       shuffleArray(this.questions);
       
@@ -83,6 +86,12 @@ class FlashcardManager {
 
       const isNewCard = q.attempts === 0;
       const isDueCard = isDue(q.next_review);
+      
+      // 額外過濾：若為 Quiz Mode (Auto SRS)，僅允許 type === 'quiz'
+      if (this.mode === 'quiz' && q.type !== 'quiz') {
+        return false;
+      }
+
       // 包含 "新卡片" 或 "到期卡片" (甚至是 "過期卡片")
       return isNewCard || isDueCard;
     });
