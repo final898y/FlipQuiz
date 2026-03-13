@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
@@ -41,14 +41,67 @@
         <div class="navbar-actions">
           <button
             type="button"
+            id="btn-recommend"
+            class="btn-icon"
+            title="推薦題庫"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+              />
+            </svg>
+            <span>推薦</span>
+          </button>
+
+          <button
+            type="button"
             id="btn-export"
             class="btn-icon"
             title="匯出進度 (CSV)"
           >
-            📥 匯出
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+              />
+            </svg>
+            <span>匯出</span>
           </button>
+
           <button type="button" id="btn-help" class="btn-icon" title="使用說明">
-            ❓ 說明
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 16v-4M12 8h.01"
+              />
+            </svg>
+            <span>說明</span>
           </button>
         </div>
       </header>
@@ -267,8 +320,23 @@
             aria-label="上一題"
             title="上一題 (方向鍵 ←)"
           >
-            ← 上一題
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.75 19.5 8.25 12l7.5-7.5"
+              />
+            </svg>
+            <span>上一題</span>
           </button>
+
           <button
             type="button"
             class="btn btn-shuffle"
@@ -276,8 +344,23 @@
             aria-label="隨機洗牌"
             title="隨機洗牌"
           >
-            🔀 洗牌
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+              />
+            </svg>
+            <span>洗牌</span>
           </button>
+
           <button
             type="button"
             class="btn btn-primary"
@@ -285,7 +368,21 @@
             aria-label="下一題"
             title="下一題 (方向鍵 →)"
           >
-            下一題 →
+            <span>下一題</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m8.25 4.5 7.5 7.5-7.5 7.5"
+              />
+            </svg>
           </button>
         </div>
 
@@ -337,7 +434,7 @@
 
       <!-- 鍵盤提示 -->
       <div class="keyboard-hint">
-        <small>💡 提示：使用 ← → 方向鍵切換題目，空白鍵翻轉卡片</small>
+        <small>提示：使用 ← → 方向鍵切換題目，空白鍵翻轉卡片</small>
       </div>
     </div>
 
@@ -352,50 +449,240 @@
       <div class="modal-backdrop"></div>
       <div class="modal-content">
         <header class="modal-header">
-          <h2 id="modal-title">使用說明</h2>
+          <h2 id="modal-title" class="modal-title-with-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+              />
+            </svg>
+            <span>使用說明</span>
+          </h2>
           <button type="button" class="btn-close" aria-label="關閉說明">
-            ×
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
           </button>
         </header>
+
         <div class="modal-body">
-          <h3>📥 如何匯入題庫？</h3>
-          <ol>
-            <li>在 Google Sheets 建立題庫 (格式參考下方)。</li>
-            <li>點擊「檔案」>「共用」>「發布到網路」。</li>
-            <li>選擇「逗號分隔值 (.csv)」，然後複製連結。</li>
-            <li>將連結貼到上方的輸入框並點擊「載入題庫」。</li>
-          </ol>
+          <section class="help-section">
+            <h3 class="help-subtitle">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="ui-icon brand-text"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
+                />
+              </svg>
+              如何匯入題庫？
+            </h3>
+            <ol class="help-list">
+              <li>在 Google Sheets 建立題庫 (格式參考下方)。</li>
+              <li>點擊「檔案」>「共用」>「發布到網路」。</li>
+              <li>選擇「逗號分隔值 (.csv)」，然後複製連結。</li>
+              <li>將連結貼到上方的輸入框並點擊「載入題庫」。</li>
+            </ol>
+          </section>
 
-          <h3>學習模式說明</h3>
-          <ul>
-            <li>
-              <strong>瀏覽模式</strong>：自由練習，不計分、不更新複習時間。
-            </li>
-            <li>
-              <strong>手動 SRS</strong
-              >：針對到期卡片，翻面後依記憶狀況手動評分。
-            </li>
-            <li>
-              <strong>自動 SRS</strong
-              >：針對到期測驗題，依答題狀況自動計算下次複習時間。
-            </li>
-            <li>
-              <strong>快速測驗</strong>：純計分測驗模式，不影響 SRS
-              進度，結算答對率。
-            </li>
-          </ul>
+          <section class="help-section">
+            <h3 class="help-subtitle">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="ui-icon brand-text"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A57.43 57.43 0 0 1 12 13.5c1.898 0 3.755-.094 5.25-.276V15a.75.75 0 0 0 1.5 0V11.233"
+                />
+              </svg>
+              學習模式說明
+            </h3>
+            <ul class="help-list">
+              <li>
+                <strong>瀏覽模式</strong>：自由練習，不計分、不更新複習時間。
+              </li>
+              <li>
+                <strong>手動 SRS</strong
+                >：針對到期卡片，翻面後依記憶狀況手動評分。
+              </li>
+              <li>
+                <strong>自動 SRS</strong
+                >：針對到期測驗題，依答題狀況自動計算下次複習時間。
+              </li>
+              <li>
+                <strong>快速測驗</strong>：純計分測驗模式，不影響 SRS 進度。
+              </li>
+            </ul>
+          </section>
 
-          <h3>⌨️ 鍵盤快捷鍵</h3>
-          <ul>
-            <li><strong>← / →</strong>：切換題目 (瀏覽模式)</li>
-            <li><strong>Space</strong>：翻轉卡片</li>
-            <li><strong>1 / 2 / 3 / 4</strong>：SRS 評分 (SRS模式)</li>
-          </ul>
+          <section class="help-section">
+            <h3 class="help-subtitle">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="ui-icon brand-text"
+              >
+                <rect
+                  x="2"
+                  y="4"
+                  width="20"
+                  height="16"
+                  rx="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              鍵盤快捷鍵
+            </h3>
+            <ul class="help-list shortcuts">
+              <li>
+                <kbd>←</kbd> / <kbd>→</kbd><span>切換題目 (瀏覽模式)</span>
+              </li>
+              <li><kbd>Space</kbd><span>翻轉卡片</span></li>
+              <li>
+                <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> / <kbd>4</kbd
+                ><span>SRS 評分 (SRS 模式)</span>
+              </li>
+            </ul>
+          </section>
 
-          <hr />
-          <p>
+          <hr class="modal-divider" />
+          <p class="export-tip">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon sm"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+              />
+            </svg>
             <small>建議定期點擊右上角的「匯出」按鈕備份您的學習進度。</small>
           </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 推薦題庫 Modal -->
+    <div
+      id="recommend-modal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="recommend-title"
+    >
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <header class="modal-header">
+          <h2 id="recommend-title" class="modal-title-with-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon brand-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
+              />
+            </svg>
+            <span>推薦題庫</span>
+          </h2>
+          <button
+            type="button"
+            class="btn-close-recommend btn-close"
+            aria-label="關閉"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="ui-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <p class="modal-intro">為您挑選的精選題庫，點擊即可立即練習：</p>
+          <div id="recommend-list" class="recommend-list">
+            <!-- 推薦項目會在這裡渲染 -->
+          </div>
+          <hr class="modal-divider" />
+          <div class="share-box">
+            <p class="contact-text">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="ui-icon sm"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                />
+              </svg>
+              <small>想分享您的題庫嗎？歡迎聯繫開發者加入列表！</small>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ const elements = {
   cardBack: document.querySelector(".card-back"),
 
   // Navbar 按鈕
+  btnRecommend: document.getElementById("btn-recommend"),
   btnExport: document.getElementById("btn-export"),
   btnHelp: document.getElementById("btn-help"),
 
@@ -22,6 +23,11 @@ const elements = {
   modalClose: document.querySelector(".btn-close"),
   modalBackdrop: document.querySelector(".modal-backdrop"),
 
+  // 推薦 Modal
+  recommendModal: document.getElementById("recommend-modal"),
+  recommendList: document.getElementById("recommend-list"),
+  recommendClose: document.querySelector(".btn-close-recommend"),
+  recommendBackdrop: document.querySelector("#recommend-modal .modal-backdrop"),
   // 新增元素
   dashboard: {
     due: document.getElementById("count-due"),
@@ -278,13 +284,13 @@ export const ui = {
 
     // 根據模式更新提示文字
     if (mode === "review") {
-      elements.frontHint.textContent = "🤔 思考答案後，點擊翻面";
+      elements.frontHint.textContent = "思考答案後，點擊翻面";
       elements.controls.srs.classList.add("hidden");
     } else if (mode === "quiz") {
-      elements.frontHint.textContent = "⚡ 自動 SRS (測驗中)";
+      elements.frontHint.textContent = "自動 SRS (測驗中)";
       elements.controls.srs.classList.add("hidden");
     } else if (mode === "exam") {
-      elements.frontHint.textContent = "📝 快速測驗 (不計入 SRS)";
+      elements.frontHint.textContent = "快速測驗 (不計入 SRS)";
       elements.controls.srs.classList.add("hidden");
     } else {
       elements.frontHint.textContent = "正面：題目 (點擊翻面)";
@@ -425,6 +431,15 @@ export const ui = {
       // 這裡直接移除 hidden 讓 opacity transition 生效
     } else {
       elements.modal.classList.add("hidden");
+    }
+  },
+
+  /** 切換推薦 Modal 顯示狀態 */
+  toggleRecommendModal(show) {
+    if (show) {
+      elements.recommendModal.classList.remove("hidden");
+    } else {
+      elements.recommendModal.classList.add("hidden");
     }
   },
 };

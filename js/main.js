@@ -3,6 +3,7 @@ import { flashcardManager } from "./flashcardManager.js";
 import { ui } from "./ui.js";
 import { cache } from "./cache.js";
 import { exportToCSV, getFutureDate } from "./utils.js";
+import { renderRecommendationList } from "./recommendations.js";
 
 /** 更新 UI */
 function updateUI() {
@@ -287,6 +288,26 @@ function setupEventListeners() {
           // 自動洗牌，讓題目順序打亂
           manualShuffle();
       });
+  }
+
+  // 推薦按鈕與 Modal 控制
+  if (ui.elements.btnRecommend) {
+      ui.elements.btnRecommend.addEventListener("click", () => {
+          ui.toggleRecommendModal(true);
+          renderRecommendationList(ui.elements.recommendList, (url) => {
+              ui.setCsvUrl(url);
+              ui.toggleRecommendModal(false);
+              loadUserSheet(); // 自動載入
+          });
+      });
+  }
+
+  if (ui.elements.recommendClose) {
+      ui.elements.recommendClose.addEventListener("click", () => ui.toggleRecommendModal(false));
+  }
+
+  if (ui.elements.recommendBackdrop) {
+      ui.elements.recommendBackdrop.addEventListener("click", () => ui.toggleRecommendModal(false));
   }
 
   // 說明按鈕與 Modal 控制
