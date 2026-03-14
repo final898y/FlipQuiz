@@ -4,12 +4,16 @@ import { ui } from "./ui.js";
 import { cache } from "./cache.js";
 import { exportToCSV, getFutureDate } from "./utils.js";
 import { renderRecommendationList } from "./recommendations.js";
+import { tts } from "./tts.js";
 
 /** 更新 UI */
 function updateUI() {
   const data = flashcardManager.getCurrentData();
   const status = flashcardManager.getStatus();
   ui.renderCard(data, status, flashcardManager.mode);
+
+  // 切換題目時停止語音
+  tts.stop();
 
   // 如果是測驗模式，更新記分板
   if (flashcardManager.mode === 'exam') {
@@ -174,6 +178,23 @@ function manualShuffle() {
   updateUI();
 }
 
+/** 處理 TTS 朗讀 */
+function handleTTS(side) {
+  const data = flashcardManager.getCurrentData();
+  if (!data) return;
+
+  const isFlipped = ui.elements.card.classList.contains("is-flipped");
+  const targetSide = side || (isFlipped ? "back" : "front");
+
+  const text = targetSide === "front" ? data.question : data.answer;
+  const lang = targetSide === "front" ? data.lang_front : data.lang_back;
+
+  tts.speak(text, lang, {
+    onStart: () => ui.setSpeakingStatus(targetSide, true),
+    onEnd: () => ui.setSpeakingStatus(targetSide, false),
+  });
+}
+
 /* ============================================
    事件監聽器設置
    ============================================ */
@@ -188,6 +209,21 @@ function setupEventListeners() {
   const loadBtn = document.querySelector(".btn-sm");
   if (loadBtn) {
     loadBtn.addEventListener("click", loadUserSheet);
+  }
+
+  // 綁定 TTS 按鈕
+  if (ui.elements.ttsFront) {
+    ui.elements.ttsFront.addEventListener("click", (e) => {
+      e.stopPropagation();
+      handleTTS("front");
+    });
+  }
+
+  if (ui.elements.ttsBack) {
+    ui.elements.ttsBack.addEventListener("click", (e) => {
+      e.stopPropagation();
+      handleTTS("back");
+    });
   }
 
   // 綁定控制按鈕 (Browse Mode)
@@ -220,7 +256,7 @@ function setupEventListeners() {
 
   // 卡片點擊翻面 (Browse Mode)
   ui.elements.card.addEventListener("click", (e) => {
-    if (e.target.classList.contains("option-btn")) return;
+    if (e.target.closest(".option-btn") || e.target.closest(".btn-tts")) return;
     // Review mode 下，如果未翻面且有遮罩，click event 可能被遮罩攔截(上面已處理)。
     // 如果已翻面，點擊卡片本身也可以翻回來。
     ui.flipCard();
@@ -245,6 +281,12 @@ function setupEventListeners() {
     if (e.key === " " || e.code === "Space") {
       e.preventDefault();
       ui.flipCard();
+    }
+
+    // V 鍵：朗讀
+    if (e.key.toLowerCase() === "v") {
+      e.preventDefault();
+      handleTTS();
     }
 
     // 數字鍵 1-4：SRS 評分 (僅在 Review Mode 且卡片翻到背面時)

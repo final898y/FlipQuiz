@@ -12,6 +12,8 @@ const elements = {
   csvInput: document.getElementById("csv-url-input"),
   cardFront: document.querySelector(".card-front"),
   cardBack: document.querySelector(".card-back"),
+  ttsFront: document.getElementById("tts-front"),
+  ttsBack: document.getElementById("tts-back"),
 
   // Navbar 按鈕
   btnRecommend: document.getElementById("btn-recommend"),
@@ -440,6 +442,14 @@ export const ui = {
       elements.recommendModal.classList.remove("hidden");
     } else {
       elements.recommendModal.classList.add("hidden");
+    }
+  },
+
+  /** 設定語音播放狀態視覺回饋 */
+  setSpeakingStatus(side, isSpeaking) {
+    const btn = side === "front" ? elements.ttsFront : elements.ttsBack;
+    if (btn) {
+      btn.classList.toggle("is-speaking", isSpeaking);
     }
   },
 };

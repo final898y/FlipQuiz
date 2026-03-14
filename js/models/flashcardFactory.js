@@ -28,6 +28,9 @@ export const CardType = {
  * @property {string|null} next_review 下次複習日期 (YYYY-MM-DD)
  * @property {number} interval 複習間隔（天）
  * @property {number} easiness 易難度因子 (預設 2.5)
+ * @property {number} attempts 總嘗試次數
+ * @property {string} lang_front 正面朗讀語言 (預設 en-US)
+ * @property {string} lang_back 背面朗讀語言 (預設 zh-TW)
  */
 
 /**
@@ -44,7 +47,9 @@ export const CardType = {
  * @param {string|null} [data.next_review=null] - 複習日期
  * @param {number} [data.interval=0] - 間隔天數
  * @param {number} [data.easiness=2.5] - 難易度
- * @property {number} attempts 總嘗試次數
+ * @param {number} [data.attempts=0] - 總嘗試次數
+ * @param {string} [data.lang_front="en-US"] - 正面朗讀語言
+ * @param {string} [data.lang_back="zh-TW"] - 背面朗讀語言
  * * @returns {Readonly<Flashcard>} 標準化後的物件
  */
 export function createFlashcard(data = {}) {
@@ -94,6 +99,10 @@ export function createFlashcard(data = {}) {
     interval: Math.max(0, Number(data.interval) || 0),
     easiness: Number(data.easiness) || 2.5,
     attempts: Math.max(0, Number(data.attempts) || 0),
+
+    // 語言設定 (TTS 使用)
+    lang_front: String(data.lang_front ?? "en-US").trim(),
+    lang_back: String(data.lang_back ?? "zh-TW").trim(),
   };
 
   // 封鎖物件結構，防止意外修改
